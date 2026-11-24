@@ -314,6 +314,15 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
    <div class="row"><button id="upPtReset">이 부분 처음으로</button><button id="upPtClear">이 글자만 고친 것 지우기</button><span id="upPtMsg" class="mute" style="font-size:13px"></span></div>
    <div id="upPtPrev" style="display:flex;flex-wrap:wrap;gap:4px;align-items:flex-end;background:var(--paper);border-radius:12px;padding:10px;margin-top:8px;min-height:90px"></div>
   </div>
+  <div id="gEd" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
+   <h3 style="margin:0 0 6px;font-size:17px">글자 하나씩 직접 고치기</h3>
+   <p class="mute" style="font-size:13px;margin:0 0 8px">아무 글자나 골라서 점을 끌어 모양을 고쳐요. 획(검은 부분)을 끌면 그 획이 통째로 움직여요. 고친 글자는 저장되고 TTF에도 들어가요.</p>
+   <div class="row" style="gap:6px"><button id="gPrev" aria-label="이전 글자">◀</button><input type="text" id="gCh" maxlength="1" value="가" aria-label="고칠 글자" style="width:3.2em;font-size:22px;text-align:center"><button id="gNext" aria-label="다음 글자">▶</button>
+    <label class="toggle"><input type="checkbox" id="gSoft" checked> 부드럽게 끌기</label><span id="gMsg" class="mute" style="font-size:13px"></span></div>
+   <div style="background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:8px;touch-action:none;max-width:520px"><svg id="gSvg" style="width:100%;display:block;touch-action:none" viewBox="-150 -120 1300 1240"></svg></div>
+   <div class="row" style="gap:6px;margin-top:8px"><button data-g="big">선택 획 크게</button><button data-g="small">작게</button><button data-g="fat">두껍게</button><button data-g="thin">얇게</button><button data-g="smooth">매끈하게</button><button data-g="del">선택 획 지우기</button></div>
+   <div class="row" style="gap:6px;margin-top:6px"><button data-g="up">↑</button><button data-g="down">↓</button><button data-g="left">←</button><button data-g="right">→</button><button data-g="wide">글자 폭 +</button><button data-g="narrow">글자 폭 −</button><button data-g="reset">이 글자 원래대로</button></div>
+  </div>
  </div>
 </section>
 <section class="band ed-only bmp-only" style="padding-top:0" aria-label="픽셀 편집기">
@@ -824,11 +833,12 @@ function ctSegs(ct){const n=ct.length;if(!n)return[];let st,i0;if(ct[0].on){st=c
 function isUp(id){return!!(id&&typeof FONTS!=='undefined'&&FONTS&&META(id)&&META(id).up)}
 function curUp(){const id=BMPO!==null?BMPO:(typeof FONTS!=='undefined'&&FONTS?FONTS.active:null);return isUp(id)?(UPF[META(id).up]||{loading:1}):null}
 function upXf(F,P){const s=1000/F.upm,W=P.uW||1,Hh=P.uH||1,Sl=P.uSl||0,Y=P.uY||0;return(x,y)=>[x*s*W+y*s*Sl*Hh,880-(y*s*Hh+Y*1000)]}
-function upAdv(ch,P){const F=curUp();if(!F||F.loading)return .5;const g=F.cm.get(ch.codePointAt(0));if(g===undefined)return .3;return F.adv(g)*(1000/F.upm)*(P.uW||1)/1000+(P.uTr||0)+(2*Math.max(0,+P.uWt||0)+Math.max(0,+P.uNib||0))/1000}
-function upSVG(ch,h,col){const F=curUp(),P=PP||S.p;if(!F||F.loading)return null;const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return null;const X=upXf(F,P);let d='';
+function upOv(ch){return(typeof S!=='undefined'&&S.comps&&ch)?S.comps['g:'+ch]:null}
+function upAdv(ch,P){const F=curUp();if(!F||F.loading)return .5;{const O=upOv(ch);if(O)return O.a/1000}const g=F.cm.get(ch.codePointAt(0));if(g===undefined)return .3;return F.adv(g)*(1000/F.upm)*(P.uW||1)/1000+(P.uTr||0)+(2*Math.max(0,+P.uWt||0)+Math.max(0,+P.uNib||0))/1000}
+function upSVG(ch,h,col){const F=curUp(),P=PP||S.p;if(!F||F.loading)return null;{const O=upOv(ch);if(O){const d=O.c.map(q=>'M'+q.map(p=>p[0]+' '+(880-p[1])).join('L')+'Z').join('');return`<svg viewBox="0 0 ${Math.max(1,O.a)} 1000" style="height:${h}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="${col||'currentColor'}" fill-rule="nonzero"/></svg>`}}const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return null;const X=upXf(F,P);let d='';
  if(useFx(P,ch))d=upFx(F,gi,P,ch).map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join('');else F.glyph(gi).forEach(ct=>ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const a=X(sg[1],sg[2]),b=X(sg[3],sg[4]);d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`}else{const a=X(sg[1],sg[2]);d+=(sg[0]==='M'?(d?'Z':'')+'M':'L')+a[0].toFixed(1)+' '+a[1].toFixed(1)}}));if(d)d+='Z';
  const adv=Math.max(1,upAdv(ch,P)*1000);return`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="${col||'currentColor'}" fill-rule="nonzero"/></svg>`}
-function upContours(ch){const F=curUp(),P=S.p;if(!F||F.loading)return[];const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return[];const X=upXf(F,P),out=[];if(useFx(P,ch))return upFx(F,gi,P,ch).map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));
+function upContours(ch){const F=curUp(),P=S.p;if(!F||F.loading)return[];{const O=upOv(ch);if(O)return O.c.map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]))}const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return[];const X=upXf(F,P),out=[];if(useFx(P,ch))return upFx(F,gi,P,ch).map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));
  F.glyph(gi).forEach(ct=>{const pts=[];let cur=null;ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const c0=cur,cx=sg[1],cy=sg[2],x1=sg[3],y1=sg[4];for(let t=1;t<=4;t++){const u=t/4,x=(1-u)*(1-u)*c0[0]+2*(1-u)*u*cx+u*u*x1,y=(1-u)*(1-u)*c0[1]+2*(1-u)*u*cy+u*u*y1;pts.push([x,y])}cur=[x1,y1]}else{pts.push([sg[1],sg[2]]);cur=[sg[1],sg[2]]}});
   const q=[];pts.forEach(p=>{const z=X(p[0],p[1]),r=[Math.round(z[0]),Math.round(880-z[1])];if(!q.length||q[q.length-1][0]!==r[0]||q[q.length-1][1]!==r[1])q.push(r)});if(q.length>1&&q[0][0]===q[q.length-1][0]&&q[0][1]===q[q.length-1][1])q.pop();if(q.length>=3)out.push(q)});return out}
 function hasFx(P){return!!(P&&(P.uWt||P.uRd||P.uWb||P.uNib||P.uDn||P.uSz))}
@@ -1574,7 +1584,7 @@ const UPS=[['uW','글자 폭',.6,1.4,.01,1],['uH','글자 높이',.6,1.4,.01,1],
 function drawUp(){if(!isUp(FONTS.active))return;const F=curUp();$('upTarget').innerHTML=`지금 바꾸는 글씨체: <b>${slotName(FONTS.active)}</b>${F&&F.loading?' — 불러오는 중…':''}`;
  if(!$('upSliders').dataset.built){$('upSliders').innerHTML=UPS.map(([k,n,a,b,st])=>`<div class="sl"><label for="u_${k}">${n}</label><input type="range" id="u_${k}" min="${a}" max="${b}" step="${st}"><output id="uo_${k}"></output><span></span></div>`).join('');$('upSliders').dataset.built=1;
   UPS.forEach(([k])=>{const el=$('u_'+k);el.addEventListener('pointerdown',()=>pushUndo());el.addEventListener('input',()=>{S.p[k]=+el.value;$('uo_'+k).textContent=fmtU(k,S.p[k]);schedule(true);persist()});el.addEventListener('change',()=>refresh())})}
- UPS.forEach(([k,,,,,d])=>{const v=S.p[k]??d;$('u_'+k).value=v;$('uo_'+k).textContent=fmtU(k,v)});try{window.__upPtSync&&window.__upPtSync()}catch(e){}}
+ UPS.forEach(([k,,,,,d])=>{const v=S.p[k]??d;$('u_'+k).value=v;$('uo_'+k).textContent=fmtU(k,v)});try{window.__upPtSync&&window.__upPtSync()}catch(e){}try{window.__gEdDraw&&window.__gEdDraw()}catch(e){}}
 function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')return Math.round(v*100)+'%';if(k==='uWb')return(+v).toFixed(1);if(k==='uNib')return Math.round(v);if(k==='uNa')return Math.round(v)+'°';if(k==='uDn'||k==='uSz')return Math.round(v*100)+'%';return k==='uW'||k==='uH'?Math.round(v*100)+'%':Math.round(v*1000)}
 {let PT='jong',SC='all';const fm=(k,v)=>k==='s'?Math.round(v*100)+'%':(v>0?'+':'')+Math.round(v);
  $('upPtSl').innerHTML=PTA.map(([k,n,a,b,st])=>`<div class="sl"><label for="pp_${k}">${n}</label><input type="range" id="pp_${k}" min="${a}" max="${b}" step="${st}"><output id="ppo_${k}"></output><span></span></div>`).join('');
@@ -1587,6 +1597,35 @@ function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')re
  $('upPtReset').onclick=()=>{pushUndo();if(SC==='all')PTA.forEach(([k])=>delete S.p['pt_'+PT+'_'+k]);else{const o=S.comps['u:'+ch()];if(o){PTA.forEach(([k])=>delete o[PT+'_'+k]);if(!Object.keys(o).length)delete S.comps['u:'+ch()]}}sync();refresh();persist()};
  $('upPtClear').onclick=()=>{pushUndo();delete S.comps['u:'+ch()];sync();refresh();persist()};
  window.__upPtSync=sync}
+{let sel=-1,drag=null;const sv=$('gSvg'),ch=()=>($('gCh').value||'가').slice(0,1);
+ function cur(){const O=upOv(ch());if(O)return O;const F=curUp();if(!F||F.loading)return null;const c=upContours(ch()).map(q=>fxRdp(q,2.2));return{c,a:Math.round(upAdv(ch(),S.p)*1000),fresh:1}}
+ function commit(O){delete O.fresh;S.comps['g:'+ch()]=O;persist();schedule(true)}
+ function draw(){if(!isUp(FONTS.active))return;const O=cur();if(!O){sv.innerHTML='';return}const a=O.a;sv.setAttribute('viewBox',`-150 -120 ${Math.max(800,a+300)} 1240`);
+  let h=`<rect x="0" y="-120" width="${a}" height="1240" fill="#f4f6ff"/><line x1="-150" y1="880" x2="${a+150}" y2="880" stroke="#e57373" stroke-width="3"/>`;
+  const d=O.c.map(q=>'M'+q.map(p=>p[0]+' '+(880-p[1])).join('L')+'Z').join('');h+=`<path d="${d}" fill="#111" fill-rule="nonzero" opacity=".88"/>`;
+  O.c.forEach((q,ci)=>{h+=`<path d="M${q.map(p=>p[0]+' '+(880-p[1])).join('L')}Z" fill="transparent" stroke="${ci===sel?'#2c4bd8':'none'}" stroke-width="6" data-c="${ci}" style="cursor:move"/>`});
+  if(sel>=0&&O.c[sel])O.c[sel].forEach((p,pi)=>{h+=`<circle cx="${p[0]}" cy="${880-p[1]}" r="11" fill="#fff" stroke="#2c4bd8" stroke-width="4" data-c="${sel}" data-p="${pi}"/><circle cx="${p[0]}" cy="${880-p[1]}" r="26" fill="transparent" data-c="${sel}" data-p="${pi}" style="cursor:grab"/>`});
+  sv.innerHTML=h;const n=Object.keys(S.comps).filter(k=>k.startsWith('g:')).length;$('gMsg').textContent=(upOv(ch())?'고친 글자 · ':'')+(n?`직접 고친 글자 ${n}개`:'')+(sel<0?' · 획을 눌러 고르세요':'')}
+ function pt(e){const r=sv.getBoundingClientRect(),vb=sv.viewBox.baseVal;return[vb.x+(e.clientX-r.left)/r.width*vb.width,880-(vb.y+(e.clientY-r.top)/r.height*vb.height)]}
+ sv.addEventListener('pointerdown',e=>{const t=e.target,c=t.dataset?t.dataset.c:undefined;if(c===undefined){sel=-1;draw();return}const O=cur();if(!O)return;pushUndo();const O2={c:O.c.map(q=>q.map(p=>p.slice())),a:O.a};sel=+c;drag={O:O2,p0:pt(e),pi:t.dataset.p!==undefined?+t.dataset.p:-1,orig:O2.c[sel].map(p=>p.slice())};sv.setPointerCapture(e.pointerId);e.preventDefault();draw()});
+ sv.addEventListener('pointermove',e=>{if(!drag)return;const q=pt(e),dx=q[0]-drag.p0[0],dy=q[1]-drag.p0[1],C=drag.O.c[sel],o=drag.orig,n=o.length;
+  if(drag.pi<0)C.forEach((p,i)=>{p[0]=o[i][0]+dx;p[1]=o[i][1]+dy});else{const R=$('gSoft').checked?Math.max(2,Math.round(n*.06)):0;for(let k=-R;k<=R;k++){const i=((drag.pi+k)%n+n)%n,w=R?Math.exp(-(k*k)/(2*(R/2)*(R/2))):1;C[i][0]=o[i][0]+dx*w;C[i][1]=o[i][1]+dy*w}}
+  S.comps['g:'+ch()]=drag.O;draw()});
+ const end=()=>{if(!drag)return;const O=drag.O;drag=null;O.c=O.c.map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));commit(O);draw()};sv.addEventListener('pointerup',end);sv.addEventListener('pointercancel',end);
+ function tool(k){const O0=cur();if(!O0)return;pushUndo();const O={c:O0.c.map(q=>q.map(p=>p.slice())),a:O0.a};const all=sel<0||!O.c[sel],ids=all?O.c.map((_,i)=>i):[sel];
+  const bb=qs=>{let b=[1e9,1e9,-1e9,-1e9];qs.forEach(q=>q.forEach(p=>{b=[Math.min(b[0],p[0]),Math.min(b[1],p[1]),Math.max(b[2],p[0]),Math.max(b[3],p[1])]}));return b};
+  const tr=f=>ids.forEach(i=>{O.c[i]=O.c[i].map(f)});const b=bb(ids.map(i=>O.c[i])),cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2;
+  if(k==='big'||k==='small'){const f=k==='big'?1.06:1/1.06;tr(p=>[cx+(p[0]-cx)*f,cy+(p[1]-cy)*f])}
+  else if(k==='up')tr(p=>[p[0],p[1]+15]);else if(k==='down')tr(p=>[p[0],p[1]-15]);else if(k==='left')tr(p=>[p[0]-15,p[1]]);else if(k==='right')tr(p=>[p[0]+15,p[1]]);
+  else if(k==='fat'||k==='thin'){let A=0;O.c.forEach(q=>A+=fxArea(q));const sg=A<0?1:-1,d=(k==='fat'?5:-5)*sg;ids.forEach(i=>{O.c[i]=fxOffN(O.c[i],()=>d)})}
+  else if(k==='smooth')ids.forEach(i=>{const q=O.c[i],n=q.length;if(n<6)return;O.c[i]=q.map((p,j)=>{const a=q[(j-1+n)%n],c=q[(j+1)%n];return[(a[0]+2*p[0]+c[0])/4,(a[1]+2*p[1]+c[1])/4]})});
+  else if(k==='del'){if(all)return;O.c.splice(sel,1);sel=-1}
+  else if(k==='wide')O.a+=20;else if(k==='narrow')O.a=Math.max(50,O.a-20);
+  else if(k==='reset'){delete S.comps['g:'+ch()];sel=-1;persist();schedule(true);draw();return}
+  O.c=O.c.map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));commit(O);draw()}
+ document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>tool(b.dataset.g)));
+ const step=d=>{let c=ch().codePointAt(0)+d;const F=curUp();if(F&&F.cm){let g=0;while(!F.cm.has(c)&&g++<2000)c+=d}$('gCh').value=String.fromCodePoint(c);sel=-1;draw()};$('gPrev').onclick=()=>step(-1);$('gNext').onclick=()=>step(1);$('gCh').addEventListener('input',()=>{sel=-1;draw()});
+ window.__gEdDraw=draw}
 $('upReset').onclick=()=>{pushUndo();UPS.forEach(([k,,,,,d])=>S.p[k]=d);refresh();persist()};
 async function loadUpFont(key){if(UPF[key]&&!UPF[key].loading)return;UPF[key]={loading:1};try{const buf=await idbGet(key);if(!buf)throw 0;UPF[key]=parseTTF(buf)}catch(e){UPF[key]={loading:0,failed:1,cm:new Map(),glyph:()=>[],adv:()=>500,upm:1000}}refresh()}
 async function addUpFont(buf,fileName,ex,nmO){ex=ex||{};let F;try{F=parseTTF(buf)}catch(e){return e.message==='cff'?'이 파일은 OTF 방식(CFF) 글꼴이라 아직 열 수 없어요. TTF로 된 파일을 올려 주세요.':'이 파일은 TTF로 읽을 수 없어요.'}
