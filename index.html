@@ -304,6 +304,16 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
   <p class="mute" style="margin-bottom:8px">올린 TTF는 글자 모양을 그대로 쓰고, 전체 크기·폭·기울기·간격과 굵기·둥글게·꾸불꾸불을 바꿀 수 있어요. 바꾼 내용은 아래 미리보기와 TTF 저장에 그대로 들어가요.</p>
   <div id="upSliders"></div>
   <div class="row" style="margin-top:8px"><button id="upReset">처음 상태로</button></div>
+  <div id="upParts" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
+   <h3 style="margin:0 0 6px;font-size:17px">초성·모음·받침 따로 조절</h3>
+   <p class="mute" style="font-size:13px;margin:0 0 8px">모든 글자의 받침만 올리거나, 초성만 키우는 식으로 고칠 수 있어요. '이 글자만'을 고르면 그 글자에만 더해져요.</p>
+   <div class="row" style="gap:8px"><div class="seg" id="upPtSeg"><button data-pt="cho">초성</button><button data-pt="jung">모음</button><button data-pt="jong" class="on">받침</button></div>
+    <div class="seg" id="upPtScope"><button data-sc="all" class="on">모든 글자</button><button data-sc="one">이 글자만</button></div>
+    <input type="text" id="upPtCh" maxlength="1" value="닭" aria-label="고칠 글자" style="width:3.2em;font-size:20px;text-align:center"></div>
+   <div id="upPtSl"></div>
+   <div class="row"><button id="upPtReset">이 부분 처음으로</button><button id="upPtClear">이 글자만 고친 것 지우기</button><span id="upPtMsg" class="mute" style="font-size:13px"></span></div>
+   <div id="upPtPrev" style="display:flex;flex-wrap:wrap;gap:4px;align-items:flex-end;background:var(--paper);border-radius:12px;padding:10px;margin-top:8px;min-height:90px"></div>
+  </div>
  </div>
 </section>
 <section class="band ed-only bmp-only" style="padding-top:0" aria-label="픽셀 편집기">
@@ -816,9 +826,9 @@ function curUp(){const id=BMPO!==null?BMPO:(typeof FONTS!=='undefined'&&FONTS?FO
 function upXf(F,P){const s=1000/F.upm,W=P.uW||1,Hh=P.uH||1,Sl=P.uSl||0,Y=P.uY||0;return(x,y)=>[x*s*W+y*s*Sl*Hh,880-(y*s*Hh+Y*1000)]}
 function upAdv(ch,P){const F=curUp();if(!F||F.loading)return .5;const g=F.cm.get(ch.codePointAt(0));if(g===undefined)return .3;return F.adv(g)*(1000/F.upm)*(P.uW||1)/1000+(P.uTr||0)+(2*Math.max(0,+P.uWt||0)+Math.max(0,+P.uNib||0))/1000}
 function upSVG(ch,h,col){const F=curUp(),P=PP||S.p;if(!F||F.loading)return null;const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return null;const X=upXf(F,P);let d='';
- if(hasFx(P))d=upFx(F,gi,P).map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join('');else F.glyph(gi).forEach(ct=>ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const a=X(sg[1],sg[2]),b=X(sg[3],sg[4]);d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`}else{const a=X(sg[1],sg[2]);d+=(sg[0]==='M'?(d?'Z':'')+'M':'L')+a[0].toFixed(1)+' '+a[1].toFixed(1)}}));if(d)d+='Z';
+ if(useFx(P,ch))d=upFx(F,gi,P,ch).map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join('');else F.glyph(gi).forEach(ct=>ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const a=X(sg[1],sg[2]),b=X(sg[3],sg[4]);d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`}else{const a=X(sg[1],sg[2]);d+=(sg[0]==='M'?(d?'Z':'')+'M':'L')+a[0].toFixed(1)+' '+a[1].toFixed(1)}}));if(d)d+='Z';
  const adv=Math.max(1,upAdv(ch,P)*1000);return`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="${col||'currentColor'}" fill-rule="nonzero"/></svg>`}
-function upContours(ch){const F=curUp(),P=S.p;if(!F||F.loading)return[];const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return[];const X=upXf(F,P),out=[];if(hasFx(P))return upFx(F,gi,P).map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));
+function upContours(ch){const F=curUp(),P=S.p;if(!F||F.loading)return[];const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return[];const X=upXf(F,P),out=[];if(useFx(P,ch))return upFx(F,gi,P,ch).map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));
  F.glyph(gi).forEach(ct=>{const pts=[];let cur=null;ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const c0=cur,cx=sg[1],cy=sg[2],x1=sg[3],y1=sg[4];for(let t=1;t<=4;t++){const u=t/4,x=(1-u)*(1-u)*c0[0]+2*(1-u)*u*cx+u*u*x1,y=(1-u)*(1-u)*c0[1]+2*(1-u)*u*cy+u*u*y1;pts.push([x,y])}cur=[x1,y1]}else{pts.push([sg[1],sg[2]]);cur=[sg[1],sg[2]]}});
   const q=[];pts.forEach(p=>{const z=X(p[0],p[1]),r=[Math.round(z[0]),Math.round(880-z[1])];if(!q.length||q[q.length-1][0]!==r[0]||q[q.length-1][1]!==r[1])q.push(r)});if(q.length>1&&q[0][0]===q[q.length-1][0]&&q[0][1]===q[q.length-1][1])q.pop();if(q.length>=3)out.push(q)});return out}
 function hasFx(P){return!!(P&&(P.uWt||P.uRd||P.uWb||P.uNib||P.uDn||P.uSz))}
@@ -842,7 +852,19 @@ function fxPost(ps,gi,P){const d=+P.uWt||0,rd=+P.uRd||0,wb=+P.uWb||0,nib=+P.uNib
   const mx=(x0+x1)/2,my=(y0+y1)/2,an=dn*fxRnd(gi,sd,1)*.2,dy=dn*fxRnd(gi,sd,2)*60,sc=scG,ca=Math.cos(an)*sc,sa=Math.sin(an)*sc;
   ps=ps.map(q=>q.map(p=>{const x=p[0]-mx,y=p[1]-my;return[mx+x*ca-y*sa,my+x*sa+y*ca+dy]}))}
  const sh=Math.max(0,d)+Math.max(0,nib)*.7;return ps.map(q=>fxRdp(q,.8).map(p=>[p[0]+sh,p[1]]))}
-function upFx(F,gi,P){return fxPost(upFlat(F,gi,P),gi,P)}
+const PTS=['cho','jung','jong'],PTN={cho:'초성',jung:'모음',jong:'받침'},PTA=[['x','좌우 위치',-150,150,1,0],['y','위아래 위치',-150,150,1,0],['s','크기',.6,1.4,.01,1],['w','두께',-20,30,1,0]];
+function adjOf(ch,P){const A={};let any=false;const o=ch&&typeof S!=='undefined'&&S.comps?S.comps['u:'+ch]:null;PTS.forEach(pt=>{const a={};PTA.forEach(([k,,,,,d])=>{let v=P['pt_'+pt+'_'+k];v=v===undefined?d:+v;if(o&&o[pt+'_'+k]!==undefined){v=k==='s'?v*o[pt+'_'+k]:v+o[pt+'_'+k]}a[k]=v;if(v!==d)any=true});A[pt]=a});return any?A:null}
+const PCACHE=new Map();
+function partAdj(ps,cp,A,gi,P){const K=window.__partKit;if(!K||cp<0xAC00||cp>0xD7A3)return ps;const key=gi+'|'+JSON.stringify(A)+'|'+(P.uW||1)+','+(P.uH||1)+','+(P.uSl||0)+','+(P.uY||0);if(PCACHE.has(key))return PCACHE.get(key);
+ const U=K.U,G=K.grid(ps);if(!G)return ps;const sidx=cp-0xAC00,jung=Math.floor((sidx%588)/28),hasJong=sidx%28>0,lab=K.regions(G,jung,hasJong);if(!lab)return ps;
+ const pad=22,W=G.W+2*pad,H=G.H+2*pad,x0=G.x0-pad*U,yT=G.yT+pad*U;const bb={};for(let j=0;j<G.H;j++)for(let i=0;i<G.W;i++){if(!G.m[j*G.W+i])continue;const l=lab(i,j),b=bb[l]||(bb[l]=[1e9,1e9,-1e9,-1e9]);b[0]=Math.min(b[0],i);b[1]=Math.min(b[1],j);b[2]=Math.max(b[2],i);b[3]=Math.max(b[3],j)}
+ let sd=null;for(const pt of PTS){const b=bb[pt];if(!b)continue;const a=A[pt],m=new Uint8Array(W*H),cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2,sc=a.s||1,dx=(a.x||0)/U,dy=-(a.y||0)/U;
+  const X0=Math.max(0,Math.floor(cx+pad+dx-(cx-b[0]+2)*sc)),X1=Math.min(W-1,Math.ceil(cx+pad+dx+(b[2]-cx+2)*sc)),Y0=Math.max(0,Math.floor(cy+pad+dy-(cy-b[1]+2)*sc)),Y1=Math.min(H-1,Math.ceil(cy+pad+dy+(b[3]-cy+2)*sc));
+  for(let j=Y0;j<=Y1;j++)for(let i=X0;i<=X1;i++){const si=Math.round(cx+(i-pad-dx-cx)/sc),sj=Math.round(cy+(j-pad-dy-cy)/sc);if(si<0||sj<0||si>=G.W||sj>=G.H)continue;if(G.m[sj*G.W+si]&&lab(si,sj)===pt)m[j*W+i]=1}
+  const e1=K.edt(m,W,H,1),e2=K.edt(m,W,H,0),off=-(a.w||0)/U;if(!sd){sd=new Float32Array(W*H).fill(1e9)}for(let i=0;i<W*H;i++){const v=(m[i]?-(Math.sqrt(e2[i])-.5):(Math.sqrt(e1[i])-.5))+off;if(v<sd[i])sd[i]=v}}
+ if(!sd)return ps;const out=K.march(sd,W,H,x0,yT);if(PCACHE.size>4000)PCACHE.clear();PCACHE.set(key,out);return out}
+function useFx(P,ch){return hasFx(P)||!!adjOf(ch,P)}
+function upFx(F,gi,P,ch){let ps=upFlat(F,gi,P);if(ch){const A=adjOf(ch,P);if(A)ps=partAdj(ps,ch.codePointAt(0),A,gi,P)}return fxPost(ps,gi,P)}
 function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open('hfw-fonts',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
 async function idbPut(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('f','readwrite');tx.objectStore('f').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
 async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('f','readonly'),r=tx.objectStore('f').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
@@ -1552,8 +1574,19 @@ const UPS=[['uW','글자 폭',.6,1.4,.01,1],['uH','글자 높이',.6,1.4,.01,1],
 function drawUp(){if(!isUp(FONTS.active))return;const F=curUp();$('upTarget').innerHTML=`지금 바꾸는 글씨체: <b>${slotName(FONTS.active)}</b>${F&&F.loading?' — 불러오는 중…':''}`;
  if(!$('upSliders').dataset.built){$('upSliders').innerHTML=UPS.map(([k,n,a,b,st])=>`<div class="sl"><label for="u_${k}">${n}</label><input type="range" id="u_${k}" min="${a}" max="${b}" step="${st}"><output id="uo_${k}"></output><span></span></div>`).join('');$('upSliders').dataset.built=1;
   UPS.forEach(([k])=>{const el=$('u_'+k);el.addEventListener('pointerdown',()=>pushUndo());el.addEventListener('input',()=>{S.p[k]=+el.value;$('uo_'+k).textContent=fmtU(k,S.p[k]);schedule(true);persist()});el.addEventListener('change',()=>refresh())})}
- UPS.forEach(([k,,,,,d])=>{const v=S.p[k]??d;$('u_'+k).value=v;$('uo_'+k).textContent=fmtU(k,v)})}
+ UPS.forEach(([k,,,,,d])=>{const v=S.p[k]??d;$('u_'+k).value=v;$('uo_'+k).textContent=fmtU(k,v)});try{window.__upPtSync&&window.__upPtSync()}catch(e){}}
 function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')return Math.round(v*100)+'%';if(k==='uWb')return(+v).toFixed(1);if(k==='uNib')return Math.round(v);if(k==='uNa')return Math.round(v)+'°';if(k==='uDn'||k==='uSz')return Math.round(v*100)+'%';return k==='uW'||k==='uH'?Math.round(v*100)+'%':Math.round(v*1000)}
+{let PT='jong',SC='all';const fm=(k,v)=>k==='s'?Math.round(v*100)+'%':(v>0?'+':'')+Math.round(v);
+ $('upPtSl').innerHTML=PTA.map(([k,n,a,b,st])=>`<div class="sl"><label for="pp_${k}">${n}</label><input type="range" id="pp_${k}" min="${a}" max="${b}" step="${st}"><output id="ppo_${k}"></output><span></span></div>`).join('');
+ const ch=()=>($('upPtCh').value||'닭').slice(0,1);
+ function val(k){const d=PTA.find(x=>x[0]===k)[5];if(SC==='all'){const v=S.p['pt_'+PT+'_'+k];return v===undefined?d:+v}const o=S.comps['u:'+ch()];const v=o&&o[PT+'_'+k];return v===undefined?d:+v}
+ function sync(){PTA.forEach(([k])=>{const v=val(k);$('pp_'+k).value=v;$('ppo_'+k).textContent=fm(k,v)});document.querySelectorAll('#upPtSeg button').forEach(b=>b.classList.toggle('on',b.dataset.pt===PT));document.querySelectorAll('#upPtScope button').forEach(b=>b.classList.toggle('on',b.dataset.sc===SC));const n=Object.keys(S.comps).filter(k=>k.startsWith('u:')).length;$('upPtMsg').textContent=n?`글자별로 고친 글자 ${n}개`:'';prev()}
+ function prev(){if(!isUp(FONTS.active))return;const c=ch(),base=c+' '+'각닭흙읊백헌불값'.replace(c,'');$('upPtPrev').innerHTML=[...base].map((x,i)=>x===' '?'<span style="width:14px"></span>':(upSVG(x,i===0?110:56)||'')).join('')}
+ PTA.forEach(([k,,,,,d])=>{const el=$('pp_'+k);el.addEventListener('pointerdown',()=>pushUndo());el.addEventListener('input',()=>{const v=+el.value;if(SC==='all')S.p['pt_'+PT+'_'+k]=v;else{const key='u:'+ch(),o=S.comps[key]||{};o[PT+'_'+k]=v;if(PTA.every(([kk,,,,,dd])=>{const t=o[PT+'_'+kk];return t===undefined||t===dd})){PTA.forEach(([kk])=>delete o[PT+'_'+kk])}if(Object.keys(o).length)S.comps[key]=o;else delete S.comps[key]}$('ppo_'+k).textContent=fm(k,v);prev();schedule(true);persist()});el.addEventListener('change',()=>refresh())});
+ document.querySelectorAll('#upPtSeg button').forEach(b=>b.onclick=()=>{PT=b.dataset.pt;sync()});document.querySelectorAll('#upPtScope button').forEach(b=>b.onclick=()=>{SC=b.dataset.sc;sync()});$('upPtCh').addEventListener('input',sync);
+ $('upPtReset').onclick=()=>{pushUndo();if(SC==='all')PTA.forEach(([k])=>delete S.p['pt_'+PT+'_'+k]);else{const o=S.comps['u:'+ch()];if(o){PTA.forEach(([k])=>delete o[PT+'_'+k]);if(!Object.keys(o).length)delete S.comps['u:'+ch()]}}sync();refresh();persist()};
+ $('upPtClear').onclick=()=>{pushUndo();delete S.comps['u:'+ch()];sync();refresh();persist()};
+ window.__upPtSync=sync}
 $('upReset').onclick=()=>{pushUndo();UPS.forEach(([k,,,,,d])=>S.p[k]=d);refresh();persist()};
 async function loadUpFont(key){if(UPF[key]&&!UPF[key].loading)return;UPF[key]={loading:1};try{const buf=await idbGet(key);if(!buf)throw 0;UPF[key]=parseTTF(buf)}catch(e){UPF[key]={loading:0,failed:1,cm:new Map(),glyph:()=>[],adv:()=>500,upm:1000}}refresh()}
 async function addUpFont(buf,fileName,ex,nmO){ex=ex||{};let F;try{F=parseTTF(buf)}catch(e){return e.message==='cff'?'이 파일은 OTF 방식(CFF) 글꼴이라 아직 열 수 없어요. TTF로 된 파일을 올려 주세요.':'이 파일은 TTF로 읽을 수 없어요.'}
@@ -1632,7 +1665,7 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
   cleanMask(fin,W,H);const sd=sdOf(fin);parts.forEach(P0=>{cleanMask(P0.m,W,H);const t=sdOf(P0.m);for(let i=0;i<W*H;i++){const v=t[i]+P0.d;if(v<sd[i])sd[i]=v}});
   return{adv,ps:march(sd,W,H,x0,yT)}}
  function cleanMask(m,W,H){let tot=0;for(let i=0;i<W*H;i++)tot+=m[i];if(!tot)return;const lab=new Int32Array(W*H),st=[],comps=[];let id=0;for(let i=0;i<W*H;i++){if(!m[i]||lab[i])continue;id++;let n=0;const mem=[];st.push(i);lab[i]=id;while(st.length){const c=st.pop();mem.push(c);n++;const x=c%W,y=(c/W)|0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=W||ny>=H)continue;const q=ny*W+nx;if(m[q]&&!lab[q]){lab[q]=id;st.push(q)}}}comps.push(mem)}const th=Math.max(5,tot*.04);comps.forEach(c=>{if(c.length<th)c.forEach(q=>m[q]=0)})}
- window.__sim={get SRC(){return SRC},partGlyph,srcPolys,PARTS,regions,grid};
+ window.__sim={get SRC(){return SRC},partGlyph,srcPolys,PARTS,regions,grid};window.__partKit={grid,regions,edt,march,cleanMask,U:8};
  function mixGlyph(cp){if(MIXMODE==='part')return partGlyph(cp);const L=[],MW=mixW();SRC.forEach((S0,i)=>{if(!S0)return;const gi=S0.F.cm.get(cp);if(gi===undefined)return;L.push({S0,gi,w:MW[i],i})});if(!L.length)return null;if(!L.some(o=>o.i===0)){const o=L[0];return{adv:o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a,ps:srcPolys(o.S0,o.gi)}}
   const tw=L.reduce((a,b)=>a+b.w,0);let adv=0;L.forEach(o=>{o.w/=tw;o.adv=o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a;adv+=o.w*o.adv});
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;L.forEach(o=>{o.ps=srcPolys(o.S0,o.gi).map(q=>q.map(p=>[p[0]-o.adv/2+adv/2,p[1]]));o.ps.forEach(q=>q.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}))});
