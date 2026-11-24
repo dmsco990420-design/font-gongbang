@@ -835,10 +835,11 @@ function fxPost(ps,gi,P){const d=+P.uWt||0,rd=+P.uRd||0,wb=+P.uWb||0,nib=+P.uNib
  if(!ps.length)return ps;
  if(rd>0||wb>0||nib>0)ps=ps.map(q=>fxRes(q,10));
  const r=Math.round(rd*5);if(r>0)ps=ps.map(q=>{if(q.length<2*r+4)return q;const n=q.length,o=[];for(let i=0;i<n;i++){let sx=0,sy=0;for(let k=-r;k<=r;k++){const p=q[(i+k+n)%n];sx+=p[0];sy+=p[1]}o.push([sx/(2*r+1),sy/(2*r+1)])}return o});
- if(d||nib){let A=0;ps.forEach(q=>A+=fxArea(q));const sg=A<0?1:-1,th=((+P.uNa||35)*Math.PI/180),cx=Math.cos(th),cy=Math.sin(th);const dm=P.uHw?Math.max(d,-.45*P.uHw):d;ps=ps.map(q=>fxOffN(q,(nx,ny)=>sg*(dm+nib*Math.abs(nx*cx+ny*cy))))}
+ const scG=sz>0?1+sz*fxRnd(gi,sd,3)*.13:1,dEff=d+(P.uHw&&scG!==1?((+P.uHw+d)/scG-(+P.uHw)-d):0);
+ if(dEff||nib){let A=0;ps.forEach(q=>A+=fxArea(q));const sg=A<0?1:-1,th=((+P.uNa||35)*Math.PI/180),cx=Math.cos(th),cy=Math.sin(th);const dm=P.uHw?Math.max(dEff,-.45*P.uHw):dEff;ps=ps.map(q=>fxOffN(q,(nx,ny)=>sg*(dm+nib*Math.abs(nx*cx+ny*cy))))}
  if(wb>0){const s2=sd*7.13+gi*.618;ps=ps.map(q=>q.map(p=>{const w=fxWob(p[0],p[1],s2,wb);return[p[0]+w[0],p[1]+w[1]]}))}
  if(dn>0||sz>0){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;ps.forEach(q=>q.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}));
-  const mx=(x0+x1)/2,my=(y0+y1)/2,an=dn*fxRnd(gi,sd,1)*.2,dy=dn*fxRnd(gi,sd,2)*60,sc=1+sz*fxRnd(gi,sd,3)*.13,ca=Math.cos(an)*sc,sa=Math.sin(an)*sc;
+  const mx=(x0+x1)/2,my=(y0+y1)/2,an=dn*fxRnd(gi,sd,1)*.2,dy=dn*fxRnd(gi,sd,2)*60,sc=scG,ca=Math.cos(an)*sc,sa=Math.sin(an)*sc;
   ps=ps.map(q=>q.map(p=>{const x=p[0]-mx,y=p[1]-my;return[mx+x*ca-y*sa,my+x*sa+y*ca+dy]}))}
  const sh=Math.max(0,d)+Math.max(0,nib)*.7;return ps.map(q=>fxRdp(q,.8).map(p=>[p[0]+sh,p[1]]))}
 function upFx(F,gi,P){return fxPost(upFlat(F,gi,P),gi,P)}
@@ -1662,7 +1663,7 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
  function simDraw(){clearTimeout(tm);tm=setTimeout(()=>{if(!SRC[0])return;const t=$('simTxt').value||' ';$('simA').innerHTML=line(Z,t,40,true);$('simB').innerHTML=line(SP,t,40,false)},80)}
  $('simTxt').addEventListener('input',simDraw);
  function rnd(){const hw=SRC[0]&&SRC[0].hw?SRC[0].hw:30,k=+$('simAmt').value||1,r=(a,b)=>a+Math.random()*(b-a),q=(v,st)=>Math.round(v/st)*st,ch=p=>Math.random()<Math.min(1,p*k);
-  SP={...Z,uWt:q(Math.max(-.3*hw,r(-.25*hw,.5*hw)*k),1),uRd:q(Math.min(1,r(0,.5)*k),.05),uWb:q(ch(.6)?Math.min(6,r(2,5)*k):0,.5),uNib:q(ch(.7)?Math.min(1.2*hw,r(.3*hw,.7*hw)*k):0,1),uNa:q(r(15,60),1),uDn:q(ch(.7)?Math.min(1,r(.2,.5)*k):0,.05),uSz:q(ch(.6)?Math.min(1,r(.2,.5)*k):0,.05),uW:q(1+r(-.07,.07)*k,.01),uH:q(1+r(-.03,.04)*k,.01),uSl:q(ch(.5)?r(-.03,.08)*k:0,.01),uTr:q(r(-.005,.02)*k,.005),uSeed:Math.floor(r(1,9999)),uHw:Math.round(hw)};
+  SP={...Z,uWt:0,uRd:q(Math.min(1,r(0,.5)*k),.05),uWb:q(ch(.6)?Math.min(6,r(2,5)*k):0,.5),uNib:0,uNa:q(r(15,60),1),uDn:q(ch(.7)?Math.min(1,r(.2,.5)*k):0,.05),uSz:q(ch(.6)?Math.min(1,r(.2,.5)*k):0,.05),uW:q(1+r(-.07,.07)*k,.01),uH:q(1+r(-.03,.04)*k,.01),uSl:q(ch(.5)?r(-.03,.08)*k:0,.01),uTr:q(r(-.005,.02)*k,.005),uSeed:Math.floor(r(1,9999)),uHw:Math.round(hw)};
   for(let i=1;i<3;i++)if(SRC[i])MIXW[i]=q(r(.3,1),.05);syncS();simDraw()}
  $('simRnd').onclick=rnd;$('simAmt').onchange=rnd;$('simZero').onclick=()=>{SP={...Z,uSeed:SP.uSeed,uHw:SP.uHw};syncS();simDraw()};
  const open=()=>{drawSrcs();$('simDlg').classList.remove('hide');document.documentElement.style.overflow='hidden';if(SRC[0])simDraw()},close=()=>{$('simDlg').classList.add('hide');document.documentElement.style.overflow=''};
