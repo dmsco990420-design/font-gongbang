@@ -123,7 +123,7 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
  .modeSeg{display:flex!important;width:100%}
  header .top>.row{flex-wrap:nowrap;gap:6px;overflow-x:auto}
  header .top>.row button{font-size:13px;padding:4px 9px;white-space:nowrap}
- #saveStat{display:none}
+ #saveStat{font-size:12px;white-space:nowrap;align-self:center}
  .modeSeg button{flex:1 1 0;min-width:0;font-size:14px;padding:6px 4px;line-height:1.25}
  .band{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
  .card{padding:14px!important;border-radius:16px}
@@ -648,9 +648,10 @@ if(FONTS.active&&FONTS.active!=='mine'&&(FONTS.active.startsWith('bmp:')||(/^p\d
 function saveFonts(){FONTS.slots[FONTS.active]={p:S.p,comps:S.comps};try{localStorage.setItem(FK,JSON.stringify(FONTS))}catch(e){}}
 let saveT=0,lastBk=0;
 function flushSave(){clearTimeout(saveT);let ok=true;try{localStorage.setItem(SK,JSON.stringify({p:S.p,comps:S.comps,cur:{ch:cur.ch,part:cur.part}}))}catch(e){ok=false}saveFonts();try{const chk=JSON.parse(localStorage.getItem(FK));if(!chk||!chk.slots[FONTS.active])ok=false}catch(e){ok=false}
- const d=new Date(),t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');const el=document.getElementById('saveStat');if(el)el.textContent=ok?`${slotName(FONTS.active)} 저장됨 ${t}`:'저장이 안 돼요 — ‘작업 저장(.json)’으로 파일을 받아 두세요';return ok}
+ const d=new Date(),t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');const el=document.getElementById('saveStat');if(el)el.textContent=ok?`✓ 자동 저장됨 ${t}`:'저장이 안 돼요 — ‘작업 저장(.json)’으로 파일을 받아 두세요';return ok}
 function persist(){clearTimeout(saveT);saveT=setTimeout(()=>{flushSave();backup()},300)}
 window.addEventListener('pagehide',()=>flushSave());document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSave()});
+let autoJ='',autoN=0;setInterval(()=>{try{const j=FONTS.active+'|'+JSON.stringify(S.p)+JSON.stringify(S.comps);if(!autoJ){autoJ=j;return}if(j!==autoJ){autoJ=j;flushSave();if(++autoN%15===0)backup()}}catch(e){}},3000);window.addEventListener('blur',()=>flushSave());try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 function backup(force){const now=Date.now();if(!force&&now-lastBk<45000)return;lastBk=now;try{const h=JSON.parse(localStorage.getItem(SK+'-hist')||'[]');const snap=JSON.stringify({p:S.p,comps:S.comps});if(h.length&&JSON.stringify({p:h[h.length-1].p,comps:h[h.length-1].comps})===snap)return;h.push({t:now,p:S.p,comps:S.comps});while(h.length>30)h.shift();localStorage.setItem(SK+'-hist',JSON.stringify(h));drawHist()}catch(e){}}
 function drawHist(){const el=document.getElementById('histSel');if(!el)return;let h=[];try{h=JSON.parse(localStorage.getItem(SK+'-hist')||'[]')}catch(e){}
  el.innerHTML=h.length?h.map((x,i)=>{const d=new Date(x.t),n=Object.keys(x.comps||{}).filter(k=>!k.startsWith('frame:')&&!k.startsWith('off:')).length;return`<option value="${i}">${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} — 고친 자모 ${n}개</option>`}).reverse().join(''):'<option value="">아직 백업이 없어요</option>'}
