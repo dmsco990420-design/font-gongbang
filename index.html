@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>여백 폰트 공방</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2c4bd8">
@@ -106,6 +106,40 @@ input[type=range]{width:100%;accent-color:var(--sel);height:32px}
 .simDlg{position:fixed;inset:0;background:rgba(20,20,20,.38);z-index:80;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 12px}.simBox{max-width:860px;width:100%;background:var(--paper,#fff)}.simPrev{display:grid;gap:10px;margin:10px 0}.simPrev>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;overflow:hidden}.simLine{display:flex;flex-wrap:wrap;align-items:flex-end;color:#111;line-height:1}.simLine svg{display:block}.hide{display:none!important}body.simple .adv{display:none!important}body:not(.bmp) .bmp-only{display:none!important}body.bmp main.ed-only{display:none!important}body:not(.upf) .up-only{display:none!important}body.upf main.ed-only{display:none!important}.bmGrid{max-width:520px;margin:12px auto;touch-action:none}.bmGrid svg{width:100%;height:auto;display:block;cursor:crosshair}body.m-edit .mk-only{display:none!important}body.m-make .ed-only{display:none!important}.modeSeg button{min-width:140px;font-weight:700;min-height:46px;font-size:16px}
 @media(max-width:600px){.sl{grid-template-columns:5.5em minmax(0,1fr) 2.8em 3.4em}.preset{width:160px}}
 @media(prefers-reduced-motion:no-preference){.line .g svg path{transition:d .12s}}
+</style>
+
+<style id="mobileUI">
+.tabbar{display:none}
+@media(max-width:760px){
+ html{-webkit-text-size-adjust:100%}
+ body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+ input,select,textarea{font-size:16px!important}
+ button{min-height:44px}
+ input[type=range]{height:34px}
+ header.band{padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:10px}
+ header.band h1{font-size:22px;margin:0}
+ header.band .top>div:first-child p{display:none}
+ .modeSeg{display:flex!important;width:100%}
+ header .top>.row{flex-wrap:nowrap;gap:6px;overflow-x:auto}
+ header .top>.row button{font-size:13px;padding:4px 9px;white-space:nowrap}
+ #saveStat{display:none}
+ .modeSeg button{flex:1 1 0;min-width:0;font-size:14px;padding:6px 4px;line-height:1.25}
+ .band{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .card{padding:14px!important;border-radius:16px}
+ .preset{width:150px}
+ .sl{grid-template-columns:4.8em minmax(0,1fr) 3em auto!important;gap:8px}
+ .w{flex-wrap:wrap!important;flex:0 1 auto!important;max-width:100%}
+ section[aria-label="미리보기"]{overflow-x:hidden}
+ .simDlg{padding:0!important;align-items:stretch}
+ .simBox{border-radius:0!important;min-height:100%;padding-top:calc(14px + env(safe-area-inset-top))!important;padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+ .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:9000;background:var(--paper,#fff);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px;box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+ .tabbar button{flex:1 1 0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;padding:4px 0;min-height:52px;border-radius:12px;color:inherit;opacity:.6}
+ .tabbar button b{font-size:20px;font-weight:400;line-height:1}
+ .tabbar button.on{opacity:1;background:rgba(44,75,216,.1);color:#2c4bd8}
+ body[data-tab=prev] header.band,body[data-tab=prev] main,body[data-tab=prev] section.band:not([aria-label="미리보기"]),
+ body[data-tab=save] header.band,body[data-tab=save] main,body[data-tab=save] section.band:not([aria-label="내보내기"]),
+ body[data-tab=work] section[aria-label="미리보기"],body[data-tab=work] section[aria-label="내보내기"]{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -1343,6 +1377,7 @@ $('build').onclick=async()=>{const btn=$('build');btn.disabled=true;$('saveTTF')
 let DL=null;
 (async()=>{try{if(window.claude&&claude.use)DL=await claude.use('downloads')}catch(e){DL=null}})();
 async function saveFile(filename,data,msgEl){
+ if(!DL){const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);if(ios&&navigator.canShare){try{const fl=new File([data],filename,{type:/\.ttf$/i.test(filename)?'font/ttf':'application/octet-stream'});if(navigator.canShare({files:[fl]})){navigator.share({files:[fl]}).then(()=>{msgEl.textContent=`‘${filename}’을 보냈어요. ‘파일에 저장’을 고르면 파일 앱에 들어가요.`}).catch(e=>{msgEl.textContent=e&&e.name==='AbortError'?'저장을 취소했어요.':'공유 창을 열 수 없어요.'});return}}catch(e){}}}
  if(DL){try{await DL.save({filename,data});msgEl.textContent=`‘${filename}’ 저장했어요.`}catch(e){msgEl.textContent=e&&e.code==='declined'?'저장을 취소했어요.':'여기선 파일 저장이 안 돼요. 이 페이지를 claude.ai에서 열어 주세요.'}return}
  try{const url=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);msgEl.textContent=`‘${filename}’ 저장을 시도했어요. 안 받아졌다면 이 페이지를 claude.ai에서 열어 주세요.`}catch(e){msgEl.textContent='여기선 파일 저장이 안 돼요.'}}
 const safeName=s=>(s.replace(/[\\/:*?"<>|]/g,'').trim()||'font');
@@ -1542,6 +1577,9 @@ fetch('dream.json').then(r=>r.json()).then(d=>{BMP.dream=d;refresh()}).catch(()=
 drawSliders();drawTarget();drawHist();let m0='s';try{m0=localStorage.getItem(SK+'-mode')||'s'}catch(_){}setMode(m0==='s');let v0='make';try{v0=localStorage.getItem(SK+'-view')||'make'}catch(e){}setView(v0);$('fname').value=slotName(FONTS.active);
 }
 </script>
+<nav class="tabbar" aria-label="화면 이동"><button data-tab="work" class="on"><b>✏️</b>만들기·고치기</button><button data-tab="prev"><b>👀</b>미리보기</button><button data-tab="save"><b>💾</b>저장</button><button data-tab="sim"><b>✨</b>닮은 폰트</button></nav>
+<script>(function(){const B=document.body;const sd=document.getElementById('simDlg');if(sd)B.appendChild(sd);function go(t){if(t==='sim'){const m=document.getElementById('modeSim');if(m)m.click();return}B.dataset.tab=t;document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));scrollTo(0,0);try{localStorage.setItem('hfw-tab',t)}catch(e){}try{window.dispatchEvent(new Event('resize'))}catch(e){}}
+document.querySelectorAll('.tabbar button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));let t='work';try{t=localStorage.getItem('hfw-tab')||'work'}catch(e){}if(t==='sim')t='work';go(t)})();</script>
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
 </body>
 </html>
