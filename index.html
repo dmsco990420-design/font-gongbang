@@ -1636,6 +1636,6 @@ drawSliders();drawTarget();drawHist();let m0='s';try{m0=localStorage.getItem(SK+
 <nav class="tabbar" aria-label="화면 이동"><button data-tab="work" class="on"><b>✏️</b>만들기·고치기</button><button data-tab="prev"><b>👀</b>미리보기</button><button data-tab="save"><b>💾</b>저장</button><button data-tab="sim"><b>✨</b>닮은 폰트</button></nav>
 <script>(function(){const B=document.body;const sd=document.getElementById('simDlg');if(sd)B.appendChild(sd);function go(t){if(t==='sim'){const m=document.getElementById('modeSim');if(m)m.click();return}B.dataset.tab=t;document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));scrollTo(0,0);try{localStorage.setItem('hfw-tab',t)}catch(e){}try{window.dispatchEvent(new Event('resize'))}catch(e){}}
 document.querySelectorAll('.tabbar button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));let t='work';try{t=localStorage.getItem('hfw-tab')||'work'}catch(e){}if(t==='sim')t='work';go(t)})();</script>
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{try{r.update()}catch(e){}}).catch(()=>{});let rl=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(rl){rl=false;location.reload()}}))}</script>
 </body>
 </html>
