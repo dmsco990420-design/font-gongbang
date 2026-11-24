@@ -1603,7 +1603,7 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
  function regions(G,jung,hasJong){const{W,H,m}=G;let r0=H,r1=-1,c0=W,c1=-1;for(let j=0;j<H;j++)for(let i=0;i<W;i++)if(m[j*W+i]){if(j<r0)r0=j;if(j>r1)r1=j;if(i<c0)c0=i;if(i>c1)c1=i}if(r1<0)return null;
   const rowInk=(j,a,b)=>{let n=0;for(let i=a;i<=b;i++)n+=m[j*W+i];return n},colInk=(i,a,b)=>{let n=0;for(let j=a;j<=b;j++)n+=m[j*W+i];return n};
   const best=(lo,hi,f,pref)=>{lo=Math.round(lo);hi=Math.round(hi);let bv=1e9,bi=Math.round(pref);for(let t=lo;t<=hi;t++){const v=f(t)+Math.abs(t-pref)*.15;if(v<bv){bv=v;bi=t}}return bi};
-  const Hh=r1-r0;let jongJ=r1+1;if(hasJong)jongJ=best(r1-.62*Hh,r1-.22*Hh,j=>rowInk(j,c0,c1),r1-.38*Hh);
+  const Hh=r1-r0,vt0=[0,1,2,3,4,5,6,7,20].includes(jung);let jongJ=r1+1;if(hasJong){if(vt0)jongJ=best(r1-.62*Hh,r1-.22*Hh,j=>rowInk(j,c0,c1),r1-.38*Hh);else{let mx=-1,br=r0;for(let j=Math.round(r0+.25*Hh);j<=Math.round(r1-.3*Hh);j++){const v=rowInk(j,c0,c1);if(v>mx){mx=v;br=j}}let bb=br;while(bb<r1&&rowInk(bb+1,c0,c1)>.55*mx)bb++;const ext=j=>{let a=-1,b2=-1;for(let i=c0;i<=c1;i++)if(m[j*W+i]){if(a<0)a=i;b2=i}return[a,b2]};let st=null;jongJ=-1;for(let j=bb+1;j<=r1;j++){const e=ext(j);if(e[0]<0){if(st||j>bb+1){jongJ=j;break}continue}if(!st){st=e;continue}if(e[0]<st[0]-2||e[1]>st[1]+2){jongJ=j;break}st=[Math.min(st[0],e[0]),Math.max(st[1],e[1])]}if(jongJ<0||jongJ>r1-.12*Hh){const lo=bb+1,hi=Math.max(lo,r1-.12*Hh);jongJ=best(lo,hi,j=>rowInk(j,c0,c1),lo+(hi-lo)*.35)}}}
   let u1=r0,uc0=W,uc1=-1;for(let j=r0;j<jongJ;j++)for(let i=c0;i<=c1;i++)if(m[j*W+i]){u1=Math.max(u1,j);uc0=Math.min(uc0,i);uc1=Math.max(uc1,i)}if(uc1<0){uc0=c0;uc1=c1}
   const Hu=u1-r0,Wu=uc1-uc0,vt=[0,1,2,3,4,5,6,7,20].includes(jung),hz=[8,12,13,17,18].includes(jung);let choC=W,choR=H;
   const barCut=(a,b)=>{let mx=-1,br=u1;for(let j=Math.round(r0+.4*Hu);j<=u1;j++){const v=rowInk(j,a,b);if(v>mx){mx=v;br=j}}let bt=br;while(bt>r0&&rowInk(bt-1,a,b)>.55*mx)bt--;const lo=r0+.2*Hu,hi=Math.max(lo,bt-1);return best(lo,hi,j=>rowInk(j,a,b),hi)};
@@ -1616,17 +1616,22 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
   // enlarge A grid for safety
   const pad=6,W=GA.W+2*pad,H=GA.H+2*pad,x0=GA.x0-pad*U,yT=GA.yT+pad*U,fin=new Uint8Array(W*H);
   const bbA={};for(let j=0;j<GA.H;j++)for(let i=0;i<GA.W;i++){if(!GA.m[j*GA.W+i])continue;const l=labA(i,j);const rep=jobs.some(o=>o.pt===l);if(!rep)fin[(j+pad)*W+i+pad]=1;const bb=bbA[l]||(bbA[l]=[1e9,1e9,-1e9,-1e9]);const x=GA.x0+i*U,y=GA.yT-j*U;bb[0]=Math.min(bb[0],x);bb[1]=Math.min(bb[1],y);bb[2]=Math.max(bb[2],x);bb[3]=Math.max(bb[3],y)}
-  for(const{pt,k}of jobs){const S=SRC[k],gi=S.F.cm.get(cp),advk=S.F.adv(gi)*(1000/S.F.upm)*S.a,psk=srcPolys(S,gi).map(q=>q.map(p=>[p[0]-advk/2+adv/2,p[1]])),GK=grid(psk);const bd=bbA[pt];
+  const parts=[];for(const{pt,k}of jobs){const S=SRC[k],gi=S.F.cm.get(cp),advk=S.F.adv(gi)*(1000/S.F.upm)*S.a,psk=srcPolys(S,gi).map(q=>q.map(p=>[p[0]-advk/2+adv/2,p[1]])),GK=grid(psk);const bd=bbA[pt];
    if(!GK||!bd){if(bd){for(let j=0;j<GA.H;j++)for(let i=0;i<GA.W;i++)if(GA.m[j*GA.W+i]&&labA(i,j)===pt)fin[(j+pad)*W+i+pad]=1}continue}
    const labK=regions(GK,jung,hasJong);let bs=[1e9,1e9,-1e9,-1e9];for(let j=0;j<GK.H;j++)for(let i=0;i<GK.W;i++)if(GK.m[j*GK.W+i]&&labK(i,j)===pt){const x=GK.x0+i*U,y=GK.yT-j*U;bs=[Math.min(bs[0],x),Math.min(bs[1],y),Math.max(bs[2],x),Math.max(bs[3],y)]}
    if(bs[0]>bs[2]){for(let j=0;j<GA.H;j++)for(let i=0;i<GA.W;i++)if(GA.m[j*GA.W+i]&&labA(i,j)===pt)fin[(j+pad)*W+i+pad]=1;continue}
    const sw=Math.max(U,bs[2]-bs[0]),sh=Math.max(U,bs[3]-bs[1]),dw=Math.max(U,bd[2]-bd[0]),dh=Math.max(U,bd[3]-bd[1]);let kx=dw/sw,ky=dh/sh;const mm=Math.sqrt(kx*ky);if(mm>2.2||mm<.45){for(let j=0;j<GA.H;j++)for(let i=0;i<GA.W;i++)if(GA.m[j*GA.W+i]&&labA(i,j)===pt)fin[(j+pad)*W+i+pad]=1;continue}kx=Math.max(mm*.8,Math.min(mm*1.25,kx));ky=Math.max(mm*.8,Math.min(mm*1.25,ky));
    const cxs=(bs[0]+bs[2])/2,cys=(bs[1]+bs[3])/2,cxd=(bd[0]+bd[2])/2,cyd=(bd[1]+bd[3])/2;
+   const pm=new Uint8Array(W*H),P0={m:pm,d:0,pt};parts.push(P0);
    const X0=cxd-(sw/2)*kx-2*U,X1=cxd+(sw/2)*kx+2*U,Y0=cyd-(sh/2)*ky-2*U,Y1=cyd+(sh/2)*ky+2*U;
-   for(let j=Math.max(0,Math.floor((yT-Y1)/U));j<=Math.min(H-1,Math.ceil((yT-Y0)/U));j++)for(let i=Math.max(0,Math.floor((X0-x0)/U));i<=Math.min(W-1,Math.ceil((X1-x0)/U));i++){const x=x0+i*U,y=yT-j*U,xs=cxs+(x-cxd)/kx,ys=cys+(y-cyd)/ky,ik=Math.round((xs-GK.x0)/U),jk=Math.round((GK.yT-ys)/U);if(ik<0||jk<0||ik>=GK.W||jk>=GK.H)continue;if(GK.m[jk*GK.W+ik]&&labK(ik,jk)===pt)fin[j*W+i]=1}}
-  const dIn=edt(fin,W,H,1),dOut=edt(fin,W,H,0),sd=new Float32Array(W*H);for(let i=0;i<W*H;i++)sd[i]=fin[i]?-(Math.sqrt(dOut[i])-.5):(Math.sqrt(dIn[i])-.5);
+   for(let j=Math.max(0,Math.floor((yT-Y1)/U));j<=Math.min(H-1,Math.ceil((yT-Y0)/U));j++)for(let i=Math.max(0,Math.floor((X0-x0)/U));i<=Math.min(W-1,Math.ceil((X1-x0)/U));i++){const x=x0+i*U,y=yT-j*U,xs=cxs+(x-cxd)/kx,ys=cys+(y-cyd)/ky,ik=Math.round((xs-GK.x0)/U),jk=Math.round((GK.yT-ys)/U);if(ik<0||jk<0||ik>=GK.W||jk>=GK.H)continue;if(GK.m[jk*GK.W+ik]&&labK(ik,jk)===pt)pm[j*W+i]=1}}
+  const thick=(m,Wm,Hm,f)=>{let n=0,b=0;for(let j=0;j<Hm;j++)for(let i=0;i<Wm;i++){const q=j*Wm+i;if(!m[q]||(f&&!f(i,j)))continue;n++;const o=(x,y)=>x<0||y<0||x>=Wm||y>=Hm||!m[y*Wm+x]||(f&&!f(x,y));if(o(i-1,j)||o(i+1,j)||o(i,j-1)||o(i,j+1))b++}return b?n/b:0};
+  parts.forEach(P0=>{const ta=thick(GA.m,GA.W,GA.H,(i,j)=>labA(i,j)===P0.pt)||thick(GA.m,GA.W,GA.H),tp=thick(P0.m,W,H);if(ta&&tp)P0.d=Math.max(-2.5,Math.min(2.5,tp-ta))});
+  const sdOf=m=>{const a=edt(m,W,H,1),b=edt(m,W,H,0),o=new Float32Array(W*H);for(let i=0;i<W*H;i++)o[i]=m[i]?-(Math.sqrt(b[i])-.5):(Math.sqrt(a[i])-.5);return o};
+  cleanMask(fin,W,H);const sd=sdOf(fin);parts.forEach(P0=>{cleanMask(P0.m,W,H);const t=sdOf(P0.m);for(let i=0;i<W*H;i++){const v=t[i]+P0.d;if(v<sd[i])sd[i]=v}});
   return{adv,ps:march(sd,W,H,x0,yT)}}
- window.__sim={get SRC(){return SRC},partGlyph,srcPolys,PARTS};
+ function cleanMask(m,W,H){let tot=0;for(let i=0;i<W*H;i++)tot+=m[i];if(!tot)return;const lab=new Int32Array(W*H),st=[],comps=[];let id=0;for(let i=0;i<W*H;i++){if(!m[i]||lab[i])continue;id++;let n=0;const mem=[];st.push(i);lab[i]=id;while(st.length){const c=st.pop();mem.push(c);n++;const x=c%W,y=(c/W)|0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=W||ny>=H)continue;const q=ny*W+nx;if(m[q]&&!lab[q]){lab[q]=id;st.push(q)}}}comps.push(mem)}const th=Math.max(5,tot*.04);comps.forEach(c=>{if(c.length<th)c.forEach(q=>m[q]=0)})}
+ window.__sim={get SRC(){return SRC},partGlyph,srcPolys,PARTS,regions,grid};
  function mixGlyph(cp){if(MIXMODE==='part')return partGlyph(cp);const L=[],MW=mixW();SRC.forEach((S0,i)=>{if(!S0)return;const gi=S0.F.cm.get(cp);if(gi===undefined)return;L.push({S0,gi,w:MW[i],i})});if(!L.length)return null;if(!L.some(o=>o.i===0)){const o=L[0];return{adv:o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a,ps:srcPolys(o.S0,o.gi)}}
   const tw=L.reduce((a,b)=>a+b.w,0);let adv=0;L.forEach(o=>{o.w/=tw;o.adv=o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a;adv+=o.w*o.adv});
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;L.forEach(o=>{o.ps=srcPolys(o.S0,o.gi).map(q=>q.map(p=>[p[0]-o.adv/2+adv/2,p[1]]));o.ps.forEach(q=>q.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}))});
@@ -1650,7 +1655,7 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
  function xf(ps,P){const W=P.uW||1,Hh=P.uH||1,Sl=P.uSl||0,Y=(P.uY||0)*1000;return ps.map(q=>q.map(p=>[p[0]*W+p[1]*Sl*Hh,p[1]*Hh+Y]))}
  function glyphFor(cp,P,base){const S0=SRC[0];if(!S0)return null;const multi=SRC.filter(Boolean).length>1;let adv,ps,gi=S0.F.cm.get(cp);
   if(!multi||base){if(gi===undefined)return null;adv=S0.F.adv(gi)*(1000/S0.F.upm);ps=upFlat(S0.F,gi,N0)}else{const m=mixGlyph(cp);if(!m)return null;adv=m.adv;ps=m.ps;if(gi===undefined)gi=cp}
-  if(base)return{adv,ps};if(multi&&MIXMODE==='edge'){P={...P,uWt:Math.max(-25,Math.min(40,(+P.uWt||0)+mixWt()))}}ps=fxPost(xf(ps,P),gi,P);return{adv:adv*(P.uW||1)+(P.uTr||0)*1000+2*Math.max(0,P.uWt||0)+Math.max(0,P.uNib||0),ps}}
+  if(base)return{adv,ps};if(false){P={...P,uWt:Math.max(-25,Math.min(40,(+P.uWt||0)+mixWt()))}}ps=fxPost(xf(ps,P),gi,P);return{adv:adv*(P.uW||1)+(P.uTr||0)*1000+2*Math.max(0,P.uWt||0)+Math.max(0,P.uNib||0),ps}}
  function line1(P,txt,h,base){let o='';for(const ch of txt){const cp=ch.codePointAt(0);let g=ch===' '?null:glyphFor(cp,P,base);let adv=g?g.adv:(ch===' '?(()=>{const S0=SRC[0],gi=S0.F.cm.get(32);return gi===undefined?300:S0.F.adv(gi)*(1000/S0.F.upm)})():300);adv=Math.max(1,adv);
   const d=g?g.ps.map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join(''):'';o+=`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;width:${(adv/1000*h).toFixed(1)}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="currentColor"/></svg>`}return o}
  function line(P,txt,h,base){return txt.split(/(?<= )/).map(w=>`<span style="display:inline-flex;white-space:nowrap;align-items:flex-end;flex-wrap:wrap;max-width:100%">${line1(P,w,h,base)}</span>`).join('')}
@@ -1668,7 +1673,7 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
     for(let i=0;i<list.length;i+=120){list.slice(i,i+120).forEach(cp=>{const m=mixGlyph(cp);if(!m)return;map.push([cp,glyphs.length]);glyphs.push({adv:Math.max(1,Math.round(m.adv)),cs:m.ps.map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]))})});
      $('simProg').style.width=Math.round(i/list.length*100)+'%';$('simInfo').textContent=`글자 섞는 중… ${Math.min(i+120,list.length).toLocaleString()} / ${list.length.toLocaleString()}`;await new Promise(r=>setTimeout(r,0))}
     const out=makeTTF(nm,glyphs,map);buf=out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength)}
-   const ex={...SP};if(L.length>1&&MIXMODE==='edge')ex.uWt=Math.max(-25,Math.min(40,(+SP.uWt||0)+mixWt()));const err=await addUpFont(buf,nm,ex,nm);if(err){$('simInfo').textContent=err;btn.disabled=false;return}try{$('fname').value=META(FONTS.active).name}catch(_){}
+   const ex={...SP};if(false)ex.uWt=Math.max(-25,Math.min(40,(+SP.uWt||0)+mixWt()));const err=await addUpFont(buf,nm,ex,nm);if(err){$('simInfo').textContent=err;btn.disabled=false;return}try{$('fname').value=META(FONTS.active).name}catch(_){}
    $('simProg').style.width='100%';$('simInfo').textContent='다 만들었어요!';close();try{refresh()}catch(_){}}catch(e){$('simInfo').textContent='만드는 중 문제가 생겼어요: '+(e&&e.message||e)}btn.disabled=false}}
 
 function alertMsg(t){const el=$('saveStat');if(el){el.textContent=t;el.style.color='var(--grid)';setTimeout(()=>el.style.color='',4000)}}
