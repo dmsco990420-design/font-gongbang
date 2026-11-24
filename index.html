@@ -170,8 +170,8 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
   <div class="simPrev"><div><div class="mute" style="font-size:13px;margin-bottom:6px">첫 번째 폰트(원본)</div><div id="simA" class="simLine"></div></div><div><div class="mute" style="font-size:13px;margin-bottom:6px">새 폰트</div><div id="simB" class="simLine"></div></div></div>
   <div class="row" style="margin:4px 0 12px"><button id="simRnd" class="pri">🎲 새로 섞기</button><label class="mute" style="font-size:14px">다르게 정도 <select id="simAmt"><option value=".5">살짝</option><option value="1">보통</option><option value="1.6" selected>많이</option></select></label><button id="simZero">원본과 같게</button></div>
   <div class="row"><input type="text" id="simNm" aria-label="새 폰트 이름" placeholder="새 폰트 이름" style="flex:1 1 200px"></div>
-  <div class="row" style="margin-top:6px"><button id="simNative" class="pri">✏️ 원래처럼 고칠 수 있는 글씨체로 만들기</button><button id="simGo">외곽선 그대로 만들기</button></div>
-  <p class="mute" style="font-size:13px;margin:4px 0 0">✏️는 글자 뼈대를 따서 공방 글씨체로 만들어요. 획 두께가 모두 같게 나오고, 9글자·자모 편집·전체 스타일 등 원래 하던 방식 그대로 고칠 수 있어요.</p>
+  <div class="row" style="margin-top:6px"><label class="toggle" style="gap:6px">획 두께 <input type="number" id="simW" min="20" max="200" step="1" placeholder="자동" style="width:5em"></label><button id="simNative" class="pri">✏️ 새 글씨체 만들기</button><button id="simGo" class="hide">외곽선 그대로 만들기</button></div>
+  <p class="mute" style="font-size:13px;margin:4px 0 0">글자 뼈대를 따서 공방 글씨체로 만들어요. 모든 글자의 획 두께가 똑같이 나오고, 9글자·자모 편집·전체 스타일 등 원래 하던 방식 그대로 고칠 수 있어요. 획 두께를 비워 두면 원본 굵기에 맞추고, 숫자를 넣으면 그 두께로 만들어요(보통 90).</p>
   <div style="height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden"><div id="simProg" style="height:100%;width:0;background:#2c4bd8"></div></div>
   <p class="hint">만든 폰트는 '원래 글씨체 수정'의 새 카드로 들어가요. 거기서 굵기·펜·글자 춤 등을 계속 바꿀 수 있어요. 여러 폰트를 섞으면 만들 때 1~2분쯤 걸려요. 원본 폰트들의 라이선스가 수정·배포를 허락하는지 꼭 확인해 주세요.</p>
  </div>
@@ -1775,7 +1775,7 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
    if(!Object.keys(data).length){$('simInfo').textContent='뼈대를 딸 글자가 없어요.';btn.disabled=false;return}
    const nm=($('simNm').value||L[0].name+' 닮은꼴').trim().slice(0,40),id='c'+Date.now().toString(36);saveFonts();FONTS.meta=FONTS.meta||{};FONTS.custom=FONTS.custom||[];FONTS.meta[id]={name:nm,desc:'닮은 폰트 · 원래처럼 고칠 수 있어요',base:clone(slotBase('mine')),sk:null};FONTS.custom.unshift(id);FONTS.slots[id]={p:clone(slotBase('mine')),comps:{}};switchFont(id);
    const bak=HWD,hl=HW.length,ext=EXTRA.filter(c=>data[c]&&!HW.includes(c));HW.push(...ext);HWD=data;let n=0;try{n=genHW()}finally{HWD=bak;HW.splice(hl)}
-   S.p.w=Math.round(Math.max(20,Math.min(200,wn?wsum/wn:90)))/1000;try{syncSliders()}catch(_){}refresh();flushSave();$('fname').value=nm;setView('edit');
+   const fw=+$('simW').value;S.p.w=Math.round(Math.max(20,Math.min(200,fw>0?fw:(wn?wsum/wn:90))))/1000;try{syncSliders()}catch(_){}refresh();flushSave();$('fname').value=nm;setView('edit');
    $('simInfo').textContent=n?`'${nm}' 글씨체를 만들었어요. 획 두께 ${Math.round(S.p.w*1000)}로 모두 같아요.`:'만들지 못했어요.';close()}catch(e){$('simInfo').textContent='만드는 중 문제가 생겼어요: '+(e&&e.message||e)}btn.disabled=false};
  window.__sim={get SRC(){return SRC},partGlyph,srcPolys,PARTS,regions,grid};window.__partKit={grid,regions,edt,march,cleanMask,U:8};
  function mixGlyph(cp){if(MIXMODE==='part')return partGlyph(cp);const L=[],MW=mixW();SRC.forEach((S0,i)=>{if(!S0)return;const gi=S0.F.cm.get(cp);if(gi===undefined)return;L.push({S0,gi,w:MW[i],i})});if(!L.length)return null;if(!L.some(o=>o.i===0)){const o=L[0];return{adv:o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a,ps:srcPolys(o.S0,o.gi)}}
