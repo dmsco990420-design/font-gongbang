@@ -165,13 +165,13 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
  <p id="simInfo" class="mute" style="margin:6px 0"></p>
  <div id="simBody" class="hide">
   
-  <details open><summary style="cursor:pointer;font-weight:500;margin:6px 0">모양 조절</summary><div id="simSl"></div></details>
+  <details open><summary style="cursor:pointer;font-weight:500;margin:6px 0">모양 조절</summary><div id="simNs"></div><div id="simSl" class="hide"></div></details>
   <input type="text" id="simTxt" value="여백 꾸불 무료 폰트 다람쥐 헌 쳇바퀴에 타고파 ABC abc 123?!" aria-label="미리보기 문장" style="width:100%">
   <div class="simPrev"><div><div class="mute" style="font-size:13px;margin-bottom:6px">첫 번째 폰트(원본)</div><div id="simA" class="simLine"></div></div><div><div class="mute" style="font-size:13px;margin-bottom:6px">새 폰트</div><div id="simB" class="simLine"></div></div></div>
   <div class="row" style="margin:4px 0 12px"><button id="simRnd" class="pri">🎲 새로 섞기</button><label class="mute" style="font-size:14px">다르게 정도 <select id="simAmt"><option value=".5">살짝</option><option value="1">보통</option><option value="1.6" selected>많이</option></select></label><button id="simZero">원본과 같게</button></div>
   <div class="row"><input type="text" id="simNm" aria-label="새 폰트 이름" placeholder="새 폰트 이름" style="flex:1 1 200px"></div>
-  <div class="row" style="margin-top:6px"><label class="toggle" style="gap:6px">획 두께 <input type="number" id="simW" min="20" max="200" step="1" placeholder="자동" style="width:5em"></label><button id="simNative" class="pri">✏️ 새 글씨체 만들기</button><button id="simGo" class="hide">외곽선 그대로 만들기</button></div>
-  <p class="mute" style="font-size:13px;margin:4px 0 0">글자 뼈대를 따서 공방 글씨체로 만들어요. 모든 글자의 획 두께가 똑같이 나오고, 9글자·자모 편집·전체 스타일 등 원래 하던 방식 그대로 고칠 수 있어요. 획 두께를 비워 두면 원본 굵기에 맞추고, 숫자를 넣으면 그 두께로 만들어요(보통 90).</p>
+  <div class="row" style="margin-top:6px"><input type="hidden" id="simW"><button id="simNative" class="pri">✏️ 새 글씨체 만들기</button><button id="simGo" class="hide">외곽선 그대로 만들기</button></div>
+  <p class="mute" style="font-size:13px;margin:4px 0 0">글자 뼈대를 따서 공방 글씨체로 만들어요. 모든 글자의 획 두께가 똑같이 나오고, 9글자·자모 편집·전체 스타일 등 원래 하던 방식 그대로 고칠 수 있어요. 미리보기의 '새 폰트'가 실제로 만들어질 모양 그대로예요.</p>
   <div style="height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden"><div id="simProg" style="height:100%;width:0;background:#2c4bd8"></div></div>
   <p class="hint">만든 폰트는 '원래 글씨체 수정'의 새 카드로 들어가요. 거기서 굵기·펜·글자 춤 등을 계속 바꿀 수 있어요. 여러 폰트를 섞으면 만들 때 1~2분쯤 걸려요. 원본 폰트들의 라이선스가 수정·배포를 허락하는지 꼭 확인해 주세요.</p>
  </div>
@@ -1580,8 +1580,8 @@ function genHW(src){const G={cho:{},jung:{},jong:{}};let n=0;
  });
  for(const j of JUNG)if(!MIX[j]&&!has('jung',j)){const f=fitDef('jung',j);if(f)G.jung[j]=f}
  // write
- pushUndo();Object.entries(G).forEach(([r,o])=>Object.entries(o).forEach(([j,sh])=>{if(!sh||!sh.length||sh.keep)return;S.comps[key(r,j)]=sh.map(x=>clone(x));Object.keys(S.comps).forEach(k=>{if(k.startsWith(key(r,j)+'@'))delete S.comps[k]})}));
- if(src!=='shapes')S.p=applyLock({...S.p,curve:0,len:1,jit:0,corner:Math.min(S.p.corner,.02)});syncSliders();refresh();persist();return n}
+ if(!window.__genQuiet)pushUndo();Object.entries(G).forEach(([r,o])=>Object.entries(o).forEach(([j,sh])=>{if(!sh||!sh.length||sh.keep)return;S.comps[key(r,j)]=sh.map(x=>clone(x));Object.keys(S.comps).forEach(k=>{if(k.startsWith(key(r,j)+'@'))delete S.comps[k]})}));
+ if(src!=='shapes')S.p=applyLock({...S.p,curve:0,len:1,jit:0,corner:Math.min(S.p.corner,.02)});if(!window.__genQuiet){syncSliders();refresh();persist()}return n}
 function drawNine(){$('nine').innerHTML=HW.map(c=>{PP=effP(c);let g='';try{g=glyphSVG(c,84)}finally{PP=null}const own=S.comps[nineKey(c)]&&Object.keys(S.comps[nineKey(c)]).length;
  return`<div class="tile"><button data-nine="${c}" class="${nineSel===c?'sel':''}" style="width:100%">${g}<span>${c}${own?' <span class="own">스타일 바꿈</span>':''}</span></button><button class="edj" data-ned="${c}">모양 고치기</button></div>`}).join('')}
 $('nine').addEventListener('click',e=>{const ed=e.target.closest('[data-ned]');if(ed){nineSel=null;setChar(ed.dataset.ned);setView('edit');window.scrollTo({top:0,behavior:'smooth'});return}
@@ -1768,15 +1768,10 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
   const{paths,deg}=trace(sk,R,R);const out=[];paths.forEach(pth=>{const a=pth[0],z=pth[pth.length-1],len=pth.length,endA=deg.get(a)===1,endZ=deg.get(z)===1;if(len<3)return;if((endA&&!endZ||endZ&&!endA)&&len<hwPx*1.6)return;out.push(pth.map(i=>[+(((i%R)+.5)/R).toFixed(4),+((((i/R)|0)+.5)/R).toFixed(4)]))});
   return{st:out,w:2*hwPx*1000/R}}
  const EXTRA=[...'가나다라마바사아자차카타파하까따빠싸짜갸거겨고교구규그기개걔게계과괘괴궈궤귀긔각간갇갈감갑갓강갖갗갘같갚갛갂갃갅갆갉갊갋갌갍갎갏값갔'];
- $('simNative').onclick=async()=>{const L=SRC.filter(Boolean);if(!L.length)return;const btn=$('simNative');btn.disabled=true;$('simInfo').textContent='글자 뼈대를 따는 중…';await new Promise(r=>setTimeout(r,30));
-  try{const multi=L.length>1,data={};let wsum=0,wn=0;
-   for(const ch of [...HW,...EXTRA]){if(data[ch])continue;const cp=ch.codePointAt(0);let ps=null;if(multi){const m=mixGlyph(cp);ps=m&&m.ps}else{const gi=SRC[0].F.cm.get(cp);if(gi!==undefined)ps=srcPolys(SRC[0],gi)}if(!ps||!ps.length)continue;
-    const cs=hwCands(ch);let bx=[1,1,0,0];cs.forEach(c=>c.boxes.forEach(bb=>{bx=[Math.min(bx[0],bb[0]),Math.min(bx[1],bb[1]),Math.max(bx[2],bb[2]),Math.max(bx[3],bb[3])]}));const r=glyphStrokes(ps,bx);if(!r||!r.st.length)continue;data[ch]=r.st;wsum+=r.w;wn++}
-   if(!Object.keys(data).length){$('simInfo').textContent='뼈대를 딸 글자가 없어요.';btn.disabled=false;return}
-   const nm=($('simNm').value||L[0].name+' 닮은꼴').trim().slice(0,40),id='c'+Date.now().toString(36);saveFonts();FONTS.meta=FONTS.meta||{};FONTS.custom=FONTS.custom||[];FONTS.meta[id]={name:nm,desc:'닮은 폰트 · 원래처럼 고칠 수 있어요',base:clone(slotBase('mine')),sk:null};FONTS.custom.unshift(id);FONTS.slots[id]={p:clone(slotBase('mine')),comps:{}};switchFont(id);
-   const bak=HWD,hl=HW.length,ext=EXTRA.filter(c=>data[c]&&!HW.includes(c));HW.push(...ext);HWD=data;let n=0;try{n=genHW()}finally{HWD=bak;HW.splice(hl)}
-   const fw=+$('simW').value;S.p.w=Math.round(Math.max(20,Math.min(200,fw>0?fw:(wn?wsum/wn:90))))/1000;try{syncSliders()}catch(_){}refresh();flushSave();$('fname').value=nm;setView('edit');
-   $('simInfo').textContent=n?`'${nm}' 글씨체를 만들었어요. 획 두께 ${Math.round(S.p.w*1000)}로 모두 같아요.`:'만들지 못했어요.';close()}catch(e){$('simInfo').textContent='만드는 중 문제가 생겼어요: '+(e&&e.message||e)}btn.disabled=false};
+ $('simNative').onclick=async()=>{const L=SRC.filter(Boolean);if(!L.length)return;const btn=$('simNative');btn.disabled=true;$('simInfo').textContent='만드는 중…';await new Promise(r=>setTimeout(r,30));
+  try{const N=natBuild();if(!N){$('simInfo').textContent='뼈대를 딸 글자가 없어요.';btn.disabled=false;return}
+   const nm=($('simNm').value||L[0].name+' 닮은꼴').trim().slice(0,40),id='c'+Date.now().toString(36);saveFonts();FONTS.meta=FONTS.meta||{};FONTS.custom=FONTS.custom||[];const p={...clone(slotBase('mine')),...clone(N.p),...NP};FONTS.meta[id]={name:nm,desc:'닮은 폰트 · 원래처럼 고칠 수 있어요',base:clone(p),sk:null};FONTS.custom.unshift(id);FONTS.slots[id]={p,comps:clone(N.comps)};switchFont(id);
+   try{syncSliders()}catch(_){}refresh();flushSave();$('fname').value=nm;setView('edit');$('simInfo').textContent=`'${nm}' 글씨체를 만들었어요. 획 두께 ${Math.round(p.w*1000)}로 모두 같아요.`;close()}catch(e){$('simInfo').textContent='만드는 중 문제가 생겼어요: '+(e&&e.message||e)}btn.disabled=false};
  window.__sim={get SRC(){return SRC},partGlyph,srcPolys,PARTS,regions,grid};window.__partKit={grid,regions,edt,march,cleanMask,U:8};
  function mixGlyph(cp){if(MIXMODE==='part')return partGlyph(cp);const L=[],MW=mixW();SRC.forEach((S0,i)=>{if(!S0)return;const gi=S0.F.cm.get(cp);if(gi===undefined)return;L.push({S0,gi,w:MW[i],i})});if(!L.length)return null;if(!L.some(o=>o.i===0)){const o=L[0];return{adv:o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a,ps:srcPolys(o.S0,o.gi)}}
   const tw=L.reduce((a,b)=>a+b.w,0);let adv=0;L.forEach(o=>{o.w/=tw;o.adv=o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a;adv+=o.w*o.adv});
@@ -1805,12 +1800,28 @@ $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)r
  function line1(P,txt,h,base){let o='';for(const ch of txt){const cp=ch.codePointAt(0);let g=ch===' '?null:glyphFor(cp,P,base);let adv=g?g.adv:(ch===' '?(()=>{const S0=SRC[0],gi=S0.F.cm.get(32);return gi===undefined?300:S0.F.adv(gi)*(1000/S0.F.upm)})():300);adv=Math.max(1,adv);
   const d=g?g.ps.map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join(''):'';o+=`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;width:${(adv/1000*h).toFixed(1)}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="currentColor"/></svg>`}return o}
  function line(P,txt,h,base){return txt.split(/(?<= )/).map(w=>`<span style="display:inline-flex;white-space:nowrap;align-items:flex-end;flex-wrap:wrap;max-width:100%">${line1(P,w,h,base)}</span>`).join('')}
- function simDraw(){clearTimeout(tm);tm=setTimeout(()=>{if(!SRC[0])return;const t=$('simTxt').value||' ';$('simA').innerHTML=line(Z,t,40,true);$('simB').innerHTML=line(SP,t,40,false)},80)}
+
+ const NS=[['w','두께',.03,.16,.001],['curve','휘어짐',-.6,.8,.01],['slant','기울기',-.15,.25,.005],['jit','삐뚤기',0,1.5,.02],['bounce','글자별 높낮이',0,1.5,.02],['tilt','글자별 기울기',0,1.5,.02],['wide','글자 폭',.7,1.1,.01],['tall','글자 높이',.8,1.06,.01],['track','자간',0,.3,.005]];
+ let NP={},NAT=null,wTouched=false;const nfm=(k,v)=>k==='w'?Math.round(v*1000):k==='wide'||k==='tall'?Math.round(v*100)+'%':Math.round(v*1000);
+ $('simNs').innerHTML=NS.map(([k,n,a,b,st])=>`<div class="sl"><label for="n_${k}">${n}</label><input type="range" id="n_${k}" min="${a}" max="${b}" step="${st}"><output id="no_${k}"></output><span></span></div>`).join('');
+ function syncN(){NS.forEach(([k])=>{const v=NP[k]!==undefined?NP[k]:DEFP[k];$('n_'+k).value=v;$('no_'+k).textContent=nfm(k,v)})}
+ NS.forEach(([k])=>$('n_'+k).addEventListener('input',e=>{NP[k]=+e.target.value;if(k==='w')wTouched=true;$('no_'+k).textContent=nfm(k,NP[k]);simDraw()}));
+ function natKey(){return JSON.stringify([SRC.map(x=>x&&x.name),MIXMODE,PARTS,MIXW])}
+ function natBuild(){const k=natKey();if(NAT&&NAT.key===k)return NAT;const L=SRC.filter(Boolean);if(!L.length)return null;const multi=L.length>1,data={};let ws=0,wn=0;
+  for(const ch of [...HW,...EXTRA]){if(data[ch])continue;const cp=ch.codePointAt(0);let ps=null;if(multi){const m=mixGlyph(cp);ps=m&&m.ps}else{const gi=SRC[0].F.cm.get(cp);if(gi!==undefined)ps=srcPolys(SRC[0],gi)}if(!ps||!ps.length)continue;
+   const cs=hwCands(ch);let bx=[1,1,0,0];cs.forEach(c=>c.boxes.forEach(bb=>{bx=[Math.min(bx[0],bb[0]),Math.min(bx[1],bb[1]),Math.max(bx[2],bb[2]),Math.max(bx[3],bb[3])]}));const r=glyphStrokes(ps,bx);if(!r||!r.st.length)continue;data[ch]=r.st;ws+=r.w;wn++}
+  if(!Object.keys(data).length)return null;const svP=S.p,svC=S.comps,bak=HWD,hl=HW.length;let res=null;
+  try{S.p=clone(slotBase('mine'));S.comps={};HW.push(...EXTRA.filter(c=>data[c]&&!HW.includes(c)));HWD=data;window.__genQuiet=1;genHW();res={p:clone(S.p),comps:S.comps}}finally{window.__genQuiet=0;HWD=bak;HW.splice(hl);S.p=svP;S.comps=svC}
+  const wA=Math.round(Math.max(20,Math.min(160,wn?ws/wn:85)))/1000;NAT={key:k,p:res.p,comps:res.comps,wAuto:wA};if(!wTouched)NP.w=wA;syncN();return NAT}
+ function natSVG(ch,h){const N=natBuild();if(!N)return'';const sv=S.comps,svB=BMPO,svK=SKO;PP={...DEFP,...N.p,...NP};S.comps=N.comps;BMPO='mine';SKO={};try{return glyphSVG(ch,h)||''}catch(e){return''}finally{PP=null;S.comps=sv;BMPO=svB;SKO=svK}}
+ function natLine(txt,h){return txt.split(/(?<= )/).map(w=>`<span style="display:inline-flex;white-space:nowrap;align-items:flex-end;flex-wrap:wrap;max-width:100%">${[...w].map(c=>c===' '?`<span style="display:inline-block;width:${h*.3}px"></span>`:natSVG(c,h)).join('')}</span>`).join('')}
+ function simDraw(){clearTimeout(tm);tm=setTimeout(()=>{if(!SRC[0])return;const t=$('simTxt').value||' ';$('simA').innerHTML=line(Z,t,40,true);$('simB').innerHTML=natLine(t,40)},80)}
  $('simTxt').addEventListener('input',simDraw);
- function rnd(){const hw=SRC[0]&&SRC[0].hw?SRC[0].hw:30,k=+$('simAmt').value||1,r=(a,b)=>a+Math.random()*(b-a),q=(v,st)=>Math.round(v/st)*st,ch=p=>Math.random()<Math.min(1,p*k);
+ function rnd(){{const k=+$('simAmt').value||1,r=(a,b)=>a+Math.random()*(b-a),q=(v,st)=>Math.round(v/st)*st,ch=p=>Math.random()<Math.min(1,p*k);const w=NP.w;NP={w,curve:q(r(-.15,.25)*k,.01),slant:ch(.5)?q(r(-.02,.07)*k,.005):0,jit:ch(.7)?q(Math.min(1.2,r(.1,.4)*k),.02):0,bounce:ch(.7)?q(Math.min(1.2,r(.15,.5)*k),.02):0,tilt:ch(.6)?q(Math.min(1.2,r(.1,.45)*k),.02):0,wide:q(r(.86,1),.01),tall:q(r(.95,1.04),.01),track:q(r(.03,.09),.005)};syncN()}
+  const hw=SRC[0]&&SRC[0].hw?SRC[0].hw:30,k=+$('simAmt').value||1,r=(a,b)=>a+Math.random()*(b-a),q=(v,st)=>Math.round(v/st)*st,ch=p=>Math.random()<Math.min(1,p*k);
   SP={...Z,uWt:0,uRd:q(Math.min(1,r(0,.5)*k),.05),uWb:q(ch(.6)?Math.min(6,r(2,5)*k):0,.5),uNib:0,uNa:q(r(15,60),1),uDn:q(ch(.7)?Math.min(1,r(.2,.5)*k):0,.05),uSz:q(ch(.6)?Math.min(1,r(.2,.5)*k):0,.05),uW:q(1+r(-.07,.07)*k,.01),uH:q(1+r(-.03,.04)*k,.01),uSl:q(ch(.5)?r(-.03,.08)*k:0,.01),uTr:q(r(-.005,.02)*k,.005),uSeed:Math.floor(r(1,9999)),uHw:Math.round(hw)};
   for(let i=1;i<3;i++)if(SRC[i])MIXW[i]=q(r(.3,1),.05);syncS();simDraw()}
- $('simRnd').onclick=rnd;$('simAmt').onchange=rnd;$('simZero').onclick=()=>{SP={...Z,uSeed:SP.uSeed,uHw:SP.uHw};syncS();simDraw()};
+ $('simRnd').onclick=rnd;$('simAmt').onchange=rnd;$('simZero').onclick=()=>{NP={w:NP.w};syncN();SP={...Z,uSeed:SP.uSeed,uHw:SP.uHw};syncS();simDraw()};
  const open=()=>{drawSrcs();$('simDlg').classList.remove('hide');document.documentElement.style.overflow='hidden';if(SRC[0])simDraw()},close=()=>{$('simDlg').classList.add('hide');document.documentElement.style.overflow=''};
  $('modeSim').onclick=open;$('simX').onclick=close;$('simDlg').addEventListener('click',e=>{if(e.target.id==='simDlg')close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('simDlg').classList.contains('hide'))close()});
  $('simGo').onclick=async()=>{const L=SRC.filter(Boolean);if(!L.length)return;const btn=$('simGo');btn.disabled=true;const nm=($('simNm').value||L[0].name+' 닮은꼴').trim();let buf;
