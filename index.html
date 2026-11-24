@@ -160,16 +160,17 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
  </div>
 <div id="simDlg" class="simDlg hide" role="dialog" aria-modal="true" aria-label="비슷한 폰트 만들기"><div class="card simBox">
  <div class="row" style="justify-content:space-between"><h2 style="margin:0">비슷한 폰트 만들기</h2><button id="simX">닫기</button></div>
- <p class="mute" style="margin:6px 0 10px">폰트를 넣으면 그 글자 모양을 바탕으로 굵기·둥글기·꾸불꾸불함·폭·기울기를 바꾼 닮은 폰트를 새 카드로 만들어 줘요. 🎲를 누를 때마다 다른 느낌으로 섞여요.</p>
- <div class="row"><label class="toggle" style="border:1px solid var(--line);border-radius:10px;padding:0 12px;cursor:pointer;background:var(--paper)">TTF 넣기<input type="file" id="simFile" accept=".ttf,font/ttf" class="hide"></label><span class="mute">또는 공방에 올린 폰트</span><select id="simPick"></select></div>
+ <p class="mute" style="margin:6px 0 10px">폰트 1개를 넣으면 펜 모양·글자 춤·굵기·꾸불꾸불함을 바꿔 다른 느낌으로 만들고, 2~3개를 넣으면 글자 모양을 서로 섞어 새 폰트를 만들어요. 🎲를 누를 때마다 새로 섞여요.</p>
+ <div id="simSrcs"></div>
  <p id="simInfo" class="mute" style="margin:6px 0"></p>
  <div id="simBody" class="hide">
-  <div id="simSl"></div>
-  <div class="row" style="margin:6px 0"><button id="simRnd" class="pri">🎲 비슷하게 섞기</button><button id="simZero">원본과 같게</button></div>
+  <div class="row" style="margin:6px 0"><button id="simRnd" class="pri">🎲 새로 섞기</button><label class="mute" style="font-size:14px">다르게 정도 <select id="simAmt"><option value=".5">살짝</option><option value="1">보통</option><option value="1.6" selected>많이</option></select></label><button id="simZero">원본과 같게</button></div>
+  <details open><summary style="cursor:pointer;font-weight:500;margin:6px 0">모양 조절</summary><div id="simSl"></div></details>
   <input type="text" id="simTxt" value="여백 꾸불 무료 폰트 다람쥐 헌 쳇바퀴에 타고파 ABC abc 123?!" aria-label="미리보기 문장" style="width:100%">
-  <div class="simPrev"><div><div class="mute" style="font-size:13px;margin-bottom:6px">원본</div><div id="simA" class="simLine"></div></div><div><div class="mute" style="font-size:13px;margin-bottom:6px">새 폰트</div><div id="simB" class="simLine"></div></div></div>
+  <div class="simPrev"><div><div class="mute" style="font-size:13px;margin-bottom:6px">첫 번째 폰트(원본)</div><div id="simA" class="simLine"></div></div><div><div class="mute" style="font-size:13px;margin-bottom:6px">새 폰트</div><div id="simB" class="simLine"></div></div></div>
   <div class="row"><input type="text" id="simNm" aria-label="새 폰트 이름" placeholder="새 폰트 이름" style="flex:1 1 200px"><button id="simGo" class="pri">이 모양으로 새 글씨체 만들기</button></div>
-  <p class="hint">만든 폰트는 '원래 글씨체 수정'의 새 카드로 들어가고, 거기서 굵기·둥글게·꾸불꾸불을 계속 바꿀 수 있어요. 원본 폰트의 라이선스가 수정·배포를 허락하는지 꼭 확인해 주세요.</p>
+  <div style="height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden"><div id="simProg" style="height:100%;width:0;background:#2c4bd8"></div></div>
+  <p class="hint">만든 폰트는 '원래 글씨체 수정'의 새 카드로 들어가요. 거기서 굵기·펜·글자 춤 등을 계속 바꿀 수 있어요. 여러 폰트를 섞으면 만들 때 1~2분쯤 걸려요. 원본 폰트들의 라이선스가 수정·배포를 허락하는지 꼭 확인해 주세요.</p>
  </div>
 </div></div>
 </header>
@@ -811,14 +812,14 @@ function ctSegs(ct){const n=ct.length;if(!n)return[];let st,i0;if(ct[0].on){st=c
 function isUp(id){return!!(id&&typeof FONTS!=='undefined'&&FONTS&&META(id)&&META(id).up)}
 function curUp(){const id=BMPO!==null?BMPO:(typeof FONTS!=='undefined'&&FONTS?FONTS.active:null);return isUp(id)?(UPF[META(id).up]||{loading:1}):null}
 function upXf(F,P){const s=1000/F.upm,W=P.uW||1,Hh=P.uH||1,Sl=P.uSl||0,Y=P.uY||0;return(x,y)=>[x*s*W+y*s*Sl*Hh,880-(y*s*Hh+Y*1000)]}
-function upAdv(ch,P){const F=curUp();if(!F||F.loading)return .5;const g=F.cm.get(ch.codePointAt(0));if(g===undefined)return .3;return F.adv(g)*(1000/F.upm)*(P.uW||1)/1000+(P.uTr||0)+2*Math.max(0,+P.uWt||0)/1000}
+function upAdv(ch,P){const F=curUp();if(!F||F.loading)return .5;const g=F.cm.get(ch.codePointAt(0));if(g===undefined)return .3;return F.adv(g)*(1000/F.upm)*(P.uW||1)/1000+(P.uTr||0)+(2*Math.max(0,+P.uWt||0)+Math.max(0,+P.uNib||0))/1000}
 function upSVG(ch,h,col){const F=curUp(),P=PP||S.p;if(!F||F.loading)return null;const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return null;const X=upXf(F,P);let d='';
  if(hasFx(P))d=upFx(F,gi,P).map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join('');else F.glyph(gi).forEach(ct=>ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const a=X(sg[1],sg[2]),b=X(sg[3],sg[4]);d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`}else{const a=X(sg[1],sg[2]);d+=(sg[0]==='M'?(d?'Z':'')+'M':'L')+a[0].toFixed(1)+' '+a[1].toFixed(1)}}));if(d)d+='Z';
  const adv=Math.max(1,upAdv(ch,P)*1000);return`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="${col||'currentColor'}" fill-rule="nonzero"/></svg>`}
 function upContours(ch){const F=curUp(),P=S.p;if(!F||F.loading)return[];const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)return[];const X=upXf(F,P),out=[];if(hasFx(P))return upFx(F,gi,P).map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));
  F.glyph(gi).forEach(ct=>{const pts=[];let cur=null;ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const c0=cur,cx=sg[1],cy=sg[2],x1=sg[3],y1=sg[4];for(let t=1;t<=4;t++){const u=t/4,x=(1-u)*(1-u)*c0[0]+2*(1-u)*u*cx+u*u*x1,y=(1-u)*(1-u)*c0[1]+2*(1-u)*u*cy+u*u*y1;pts.push([x,y])}cur=[x1,y1]}else{pts.push([sg[1],sg[2]]);cur=[sg[1],sg[2]]}});
   const q=[];pts.forEach(p=>{const z=X(p[0],p[1]),r=[Math.round(z[0]),Math.round(880-z[1])];if(!q.length||q[q.length-1][0]!==r[0]||q[q.length-1][1]!==r[1])q.push(r)});if(q.length>1&&q[0][0]===q[q.length-1][0]&&q[0][1]===q[q.length-1][1])q.pop();if(q.length>=3)out.push(q)});return out}
-function hasFx(P){return!!(P&&(P.uWt||P.uRd||P.uWb))}
+function hasFx(P){return!!(P&&(P.uWt||P.uRd||P.uWb||P.uNib||P.uDn||P.uSz))}
 function upFlat(F,gi,P){const X=upXf(F,P),out=[];F.glyph(gi).forEach(ct=>{const pts=[];let cur=null;ctSegs(ct).forEach(sg=>{if(sg[0]==='Q'){const c0=cur,cx=sg[1],cy=sg[2],x1=sg[3],y1=sg[4];for(let t=1;t<=6;t++){const u=t/6;pts.push([(1-u)*(1-u)*c0[0]+2*(1-u)*u*cx+u*u*x1,(1-u)*(1-u)*c0[1]+2*(1-u)*u*cy+u*u*y1])}cur=[x1,y1]}else{pts.push([sg[1],sg[2]]);cur=[sg[1],sg[2]]}});
  const q=[];pts.forEach(p=>{const z=X(p[0],p[1]),r=[z[0],880-z[1]],l=q[q.length-1];if(!l||Math.hypot(l[0]-r[0],l[1]-r[1])>.5)q.push(r)});if(q.length>1&&Math.hypot(q[0][0]-q[q.length-1][0],q[0][1]-q[q.length-1][1])<.5)q.pop();if(q.length>=3)out.push(q)});return out}
 function fxArea(q){let s=0;for(let i=0;i<q.length;i++){const a=q[i],b=q[(i+1)%q.length];s+=a[0]*b[1]-b[0]*a[1]}return s/2}
@@ -826,12 +827,19 @@ function fxRes(q,st){const o=[];for(let i=0;i<q.length;i++){const a=q[i],b=q[(i+
 function fxOff(q,d){const n=q.length,o=[];for(let i=0;i<n;i++){const a=q[(i-1+n)%n],b=q[i],c=q[(i+1)%n],l1=Math.hypot(b[0]-a[0],b[1]-a[1])||1,l2=Math.hypot(c[0]-b[0],c[1]-b[1])||1,n1=[-(b[1]-a[1])/l1,(b[0]-a[0])/l1],n2=[-(c[1]-b[1])/l2,(c[0]-b[0])/l2];let nx=n1[0]+n2[0],ny=n1[1]+n2[1];const ln=Math.hypot(nx,ny);if(ln<1e-6){nx=n1[0];ny=n1[1]}else{nx/=ln;ny/=ln}const k=Math.max(nx*n1[0]+ny*n1[1],.4);o.push([b[0]+nx*d/k,b[1]+ny*d/k])}return o}
 function fxWob(x,y,s,A){const f=.011;return[A*(Math.sin(x*f*.9+y*f*.37+s)+.5*Math.sin(x*f*2.1-y*f*1.3+s*1.7)),A*(Math.sin(y*f*.8-x*f*.41+s*2.3)+.5*Math.sin(y*f*1.9+x*f*1.1+s*.7))]}
 function fxRdp(q,eps){if(q.length<6)return q;const N=q.length,keep=new Uint8Array(N);let far=0,fd=-1;for(let i=1;i<N;i++){const dd=(q[i][0]-q[0][0])**2+(q[i][1]-q[0][1])**2;if(dd>fd){fd=dd;far=i}}keep[0]=keep[far]=1;const st=[[0,far],[far,N]];while(st.length){const[a,b]=st.pop(),A=q[a],B=q[b%N],dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1;let mi=-1,md=eps;for(let i=a+1;i<b;i++){const D=Math.abs((q[i][0]-A[0])*dy-(q[i][1]-A[1])*dx)/L;if(D>md){md=D;mi=i}}if(mi>0){keep[mi]=1;st.push([a,mi],[mi,b])}}const o=q.filter((_,i)=>keep[i]);return o.length>=3?o:q}
-function upFx(F,gi,P){let ps=upFlat(F,gi,P);const d=+P.uWt||0,rd=+P.uRd||0,wb=+P.uWb||0;
- if(rd>0||wb>0)ps=ps.map(q=>fxRes(q,10));
+function fxRnd(gi,sd,k){const x=Math.sin(gi*12.9898+sd*78.233+k*37.719)*43758.5453;return(x-Math.floor(x))*2-1}
+function fxOffN(q,dfun){const n=q.length,o=[];for(let i=0;i<n;i++){const a=q[(i-1+n)%n],b=q[i],c=q[(i+1)%n],l1=Math.hypot(b[0]-a[0],b[1]-a[1])||1,l2=Math.hypot(c[0]-b[0],c[1]-b[1])||1,n1=[-(b[1]-a[1])/l1,(b[0]-a[0])/l1],n2=[-(c[1]-b[1])/l2,(c[0]-b[0])/l2];let nx=n1[0]+n2[0],ny=n1[1]+n2[1];const ln=Math.hypot(nx,ny);if(ln<1e-6){nx=n1[0];ny=n1[1]}else{nx/=ln;ny/=ln}const k=Math.max(nx*n1[0]+ny*n1[1],.4),d=dfun(nx,ny);o.push([b[0]+nx*d/k,b[1]+ny*d/k])}return o}
+function fxPost(ps,gi,P){const d=+P.uWt||0,rd=+P.uRd||0,wb=+P.uWb||0,nib=+P.uNib||0,dn=+P.uDn||0,sz=+P.uSz||0,sd=+P.uSeed||1;
+ if(!ps.length)return ps;
+ if(rd>0||wb>0||nib>0)ps=ps.map(q=>fxRes(q,10));
  const r=Math.round(rd*5);if(r>0)ps=ps.map(q=>{if(q.length<2*r+4)return q;const n=q.length,o=[];for(let i=0;i<n;i++){let sx=0,sy=0;for(let k=-r;k<=r;k++){const p=q[(i+k+n)%n];sx+=p[0];sy+=p[1]}o.push([sx/(2*r+1),sy/(2*r+1)])}return o});
- if(d){let A=0;ps.forEach(q=>A+=fxArea(q));const sg=A<0?1:-1;ps=ps.map(q=>fxOff(q,d*sg))}
- if(wb>0){const sd=(+P.uSeed||1)*7.13+gi*.618;ps=ps.map(q=>q.map(p=>{const w=fxWob(p[0],p[1],sd,wb);return[p[0]+w[0],p[1]+w[1]]}))}
- const sh=Math.max(0,d);return ps.map(q=>fxRdp(q,.8).map(p=>[p[0]+sh,p[1]]))}
+ if(d||nib){let A=0;ps.forEach(q=>A+=fxArea(q));const sg=A<0?1:-1,th=((+P.uNa||35)*Math.PI/180),cx=Math.cos(th),cy=Math.sin(th);ps=ps.map(q=>fxOffN(q,(nx,ny)=>sg*(d+nib*(Math.abs(nx*cx+ny*cy)-.5))))}
+ if(wb>0){const s2=sd*7.13+gi*.618;ps=ps.map(q=>q.map(p=>{const w=fxWob(p[0],p[1],s2,wb);return[p[0]+w[0],p[1]+w[1]]}))}
+ if(dn>0||sz>0){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;ps.forEach(q=>q.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}));
+  const mx=(x0+x1)/2,my=(y0+y1)/2,an=dn*fxRnd(gi,sd,1)*.2,dy=dn*fxRnd(gi,sd,2)*60,sc=1+sz*fxRnd(gi,sd,3)*.13,ca=Math.cos(an)*sc,sa=Math.sin(an)*sc;
+  ps=ps.map(q=>q.map(p=>{const x=p[0]-mx,y=p[1]-my;return[mx+x*ca-y*sa,my+x*sa+y*ca+dy]}))}
+ const sh=Math.max(0,d)+Math.max(0,nib)*.5;return ps.map(q=>fxRdp(q,.8).map(p=>[p[0]+sh,p[1]]))}
+function upFx(F,gi,P){return fxPost(upFlat(F,gi,P),gi,P)}
 function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open('hfw-fonts',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
 async function idbPut(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('f','readwrite');tx.objectStore('f').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
 async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('f','readonly'),r=tx.objectStore('f').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
@@ -1537,12 +1545,12 @@ $('dupFont').onclick=()=>{const src=FONTS.active,id='c'+Date.now().toString(36);
  FONTS.slots[id]={p:clone(S.p),comps:clone(S.comps)};switchFont(id);$('fname').value=slotName(id)};
 let dupArm=0;$('dupDel').onclick=()=>{const id=FONTS.active;if(!META(id))return;const b=$('dupDel');if(!dupArm){dupArm=1;b.textContent='정말 지울까요? 한 번 더 누르기';setTimeout(()=>{dupArm=0;b.textContent='이 복사본 지우기'},3000);return}
  dupArm=0;b.textContent='이 복사본 지우기';FONTS.custom=FONTS.custom.filter(x=>x!==id);delete FONTS.meta[id];delete FONTS.slots[id];FONTS.active='mine';const sl=FONTS.slots.mine||{p:slotBase('mine'),comps:{}};S.p={...DEFP,...clone(sl.p)};S.comps=clone(sl.comps||{});undoS.length=0;redoS.length=0;clearSel();$('fname').value=slotName('mine');syncSliders();refresh();flushSave()};
-const UPS=[['uW','글자 폭',.6,1.4,.01,1],['uH','글자 높이',.6,1.4,.01,1],['uSl','기울기',-.3,.4,.01,0],['uTr','자간',-.15,.3,.005,0],['uY','세로 위치',-.15,.15,.005,0],['uWt','굵기',-25,40,1,0],['uRd','둥글게',0,1,.05,0],['uWb','꾸불꾸불',0,20,.5,0]];
+const UPS=[['uW','글자 폭',.6,1.4,.01,1],['uH','글자 높이',.6,1.4,.01,1],['uSl','기울기',-.3,.4,.01,0],['uTr','자간',-.15,.3,.005,0],['uY','세로 위치',-.15,.15,.005,0],['uWt','굵기',-25,40,1,0],['uRd','둥글게',0,1,.05,0],['uWb','꾸불꾸불',0,20,.5,0],['uNib','펜 굵기 차이',0,60,1,0],['uNa','펜 각도',0,180,1,35],['uDn','글자 춤',0,1,.05,0],['uSz','크기 들쭉날쭉',0,1,.05,0]];
 function drawUp(){if(!isUp(FONTS.active))return;const F=curUp();$('upTarget').innerHTML=`지금 바꾸는 글씨체: <b>${slotName(FONTS.active)}</b>${F&&F.loading?' — 불러오는 중…':''}`;
  if(!$('upSliders').dataset.built){$('upSliders').innerHTML=UPS.map(([k,n,a,b,st])=>`<div class="sl"><label for="u_${k}">${n}</label><input type="range" id="u_${k}" min="${a}" max="${b}" step="${st}"><output id="uo_${k}"></output><span></span></div>`).join('');$('upSliders').dataset.built=1;
   UPS.forEach(([k])=>{const el=$('u_'+k);el.addEventListener('pointerdown',()=>pushUndo());el.addEventListener('input',()=>{S.p[k]=+el.value;$('uo_'+k).textContent=fmtU(k,S.p[k]);schedule(true);persist()});el.addEventListener('change',()=>refresh())})}
  UPS.forEach(([k,,,,,d])=>{const v=S.p[k]??d;$('u_'+k).value=v;$('uo_'+k).textContent=fmtU(k,v)})}
-function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')return Math.round(v*100)+'%';if(k==='uWb')return(+v).toFixed(1);return k==='uW'||k==='uH'?Math.round(v*100)+'%':Math.round(v*1000)}
+function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')return Math.round(v*100)+'%';if(k==='uWb')return(+v).toFixed(1);if(k==='uNib')return Math.round(v);if(k==='uNa')return Math.round(v)+'°';if(k==='uDn'||k==='uSz')return Math.round(v*100)+'%';return k==='uW'||k==='uH'?Math.round(v*100)+'%':Math.round(v*1000)}
 $('upReset').onclick=()=>{pushUndo();UPS.forEach(([k,,,,,d])=>S.p[k]=d);refresh();persist()};
 async function loadUpFont(key){if(UPF[key]&&!UPF[key].loading)return;UPF[key]={loading:1};try{const buf=await idbGet(key);if(!buf)throw 0;UPF[key]=parseTTF(buf)}catch(e){UPF[key]={loading:0,failed:1,cm:new Map(),glyph:()=>[],adv:()=>500,upm:1000}}refresh()}
 async function addUpFont(buf,fileName,ex,nmO){ex=ex||{};let F;try{F=parseTTF(buf)}catch(e){return e.message==='cff'?'이 파일은 OTF 방식(CFF) 글꼴이라 아직 열 수 없어요. TTF로 된 파일을 올려 주세요.':'이 파일은 TTF로 읽을 수 없어요.'}
@@ -1550,27 +1558,72 @@ async function addUpFont(buf,fileName,ex,nmO){ex=ex||{};let F;try{F=parseTTF(buf
  saveFonts();FONTS.meta=FONTS.meta||{};FONTS.custom=FONTS.custom||[];FONTS.meta[id]={name:nm,desc:(nmO?'닮은 폰트':'올린 TTF')+' · 글자 '+F.cm.size.toLocaleString()+'개',base:{...DEFP,uW:1,uH:1,uSl:0,uTr:0,uY:0,...ex},up:key};FONTS.custom.unshift(id);FONTS.slots[id]={p:{...DEFP,uW:1,uH:1,uSl:0,uTr:0,uY:0,...ex},comps:{}};
  switchFont(id);$('fname').value=nm+' 수정본';setView('edit');flushSave();return null}
 $('upTTF').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const err=await addUpFont(await f.arrayBuffer(),f.name.replace(/\.[^.]+$/,''));if(err)alertMsg(err);e.target.value=''});
-{const SIMS=[['uWt','굵기',-25,40,1],['uRd','둥글게',0,1,.05],['uWb','꾸불꾸불',0,20,.5],['uW','글자 폭',.7,1.3,.01],['uH','글자 높이',.8,1.2,.01],['uSl','기울기',-.2,.3,.01],['uTr','자간',-.1,.2,.005]];
- const Z={uW:1,uH:1,uSl:0,uTr:0,uY:0,uWt:0,uRd:0,uWb:0,uSeed:1};let SF=null,SB=null,SN='',SP={...Z},tm=0;
- const fm=(k,v)=>k==='uW'||k==='uH'?Math.round(v*100)+'%':k==='uRd'?Math.round(v*100)+'%':k==='uWt'?(v>0?'+':'')+Math.round(v):k==='uWb'?(+v).toFixed(1):Math.round(v*1000);
+{const SIMS=[['uWt','굵기',-25,40,1],['uNib','펜 굵기 차이',0,60,1],['uNa','펜 각도',0,180,1],['uDn','글자 춤',0,1,.05],['uSz','크기 들쭉날쭉',0,1,.05],['uWb','꾸불꾸불',0,20,.5],['uRd','둥글게',0,1,.05],['uW','글자 폭',.7,1.3,.01],['uH','글자 높이',.8,1.2,.01],['uSl','기울기',-.2,.3,.01],['uTr','자간',-.1,.2,.005]];
+ const Z={uW:1,uH:1,uSl:0,uTr:0,uY:0,uWt:0,uRd:0,uWb:0,uNib:0,uNa:35,uDn:0,uSz:0,uSeed:1};let SP={...Z},tm=0;const SRC=[null,null,null],MIXW=[1,.5,.5];
+ const fm=(k,v)=>k==='uW'||k==='uH'||k==='uRd'||k==='uDn'||k==='uSz'?Math.round(v*100)+'%':k==='uWt'?(v>0?'+':'')+Math.round(v):k==='uWb'?(+v).toFixed(1):k==='uNib'?Math.round(v):k==='uNa'?Math.round(v)+'°':Math.round(v*1000);
  $('simSl').innerHTML=SIMS.map(([k,n,a,b,st])=>`<div class="sl"><label for="s_${k}">${n}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="so_${k}"></output><span></span></div>`).join('');
- function syncS(){SIMS.forEach(([k])=>{$('s_'+k).value=SP[k];$('so_'+k).textContent=fm(k,SP[k])})}
+ function syncS(){SIMS.forEach(([k])=>{$('s_'+k).value=SP[k];$('so_'+k).textContent=fm(k,SP[k])});for(let i=1;i<3;i++){const e=$('mw'+i);if(e){e.value=MIXW[i];$('mwo'+i).textContent=Math.round(MIXW[i]*100)+'%'}}}
  SIMS.forEach(([k])=>$('s_'+k).addEventListener('input',e=>{SP[k]=+e.target.value;$('so_'+k).textContent=fm(k,SP[k]);simDraw()}));
- function line(F,P,txt,h){return txt.split(/(?<= )/).map(w=>`<span style="display:inline-flex;white-space:nowrap;align-items:flex-end">${line1(F,P,w,h)}</span>`).join('')}
- function line1(F,P,txt,h){let o='';const s=1000/F.upm;for(const ch of txt){const cp=ch.codePointAt(0),gi=F.cm.get(cp);let adv=gi===undefined?300:F.adv(gi)*s*(P.uW||1)+(P.uTr||0)*1000+2*Math.max(0,P.uWt||0);if(ch===' '&&gi===undefined)adv=300;adv=Math.max(1,adv);let d='';
-  if(gi!==undefined&&ch!==' ')d=upFx(F,gi,P).map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join('');
-  o+=`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;width:${(adv/1000*h).toFixed(1)}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="currentColor"/></svg>`}return o}
- function simDraw(){clearTimeout(tm);tm=setTimeout(()=>{if(!SF)return;const t=$('simTxt').value||' ';$('simA').innerHTML=line(SF,Z,t,40);$('simB').innerHTML=line(SF,SP,t,40)},60)}
+ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ function drawSrcs(){const ups=(FONTS.custom||[]).filter(id=>META(id)&&META(id).up);const opts='<option value="">공방에 올린 폰트에서 고르기</option>'+ups.map(id=>`<option value="${id}">${esc(META(id).name||'')}</option>`).join('');
+  $('simSrcs').innerHTML=[0,1,2].map(i=>{const S0=SRC[i],show=i===0||SRC[i-1];if(!show)return'';return`<div class="row" style="margin:6px 0;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px"><b style="min-width:4.5em">${i===0?'폰트 1':'섞을 폰트 '+(i+1)}</b>${S0?`<span style="flex:1 1 140px">${esc(S0.name)}</span>`:`<label class="toggle" style="border:1px solid var(--line);border-radius:10px;padding:0 12px;cursor:pointer;background:var(--paper)">TTF 넣기<input type="file" data-si="${i}" accept=".ttf,font/ttf" class="hide simF"></label><select data-si="${i}" class="simPk" style="flex:1 1 160px;max-width:100%">${opts}</select>`}${S0&&i>0?`<span class="mute" style="font-size:13px">섞는 양</span><input type="range" id="mw${i}" data-si="${i}" class="simMw" min="0.1" max="1" step="0.05" style="flex:1 1 90px"><output id="mwo${i}" style="min-width:3em"></output>`:''}${S0?`<button data-rm="${i}" style="min-height:34px">빼기</button>`:''}</div>`}).join('')+(SRC[0]&&!SRC[2]&&SRC[1]===null?'<p class="mute" style="font-size:13px;margin:2px 0">폰트를 하나 더 넣으면 두 폰트의 글자 모양을 섞어요. 하나만 써도 돼요.</p>':'');
+  document.querySelectorAll('.simF').forEach(el=>el.addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const buf=await f.arrayBuffer();try{setSrc(+el.dataset.si,parseTTF(buf),buf,f.name.replace(/\.[^.]+$/,''))}catch(er){$('simInfo').textContent=er.message==='cff'?'OTF(CFF) 방식 글꼴은 아직 열 수 없어요. TTF를 넣어 주세요.':'이 파일은 TTF로 읽을 수 없어요.'}}));
+  document.querySelectorAll('.simPk').forEach(el=>el.addEventListener('change',async()=>{const id=el.value;if(!id)return;const m=META(id);$('simInfo').textContent='불러오는 중…';try{const buf=await idbGet(m.up);if(!buf)throw 0;setSrc(+el.dataset.si,parseTTF(buf),buf,m.name||'올린 폰트')}catch(_){$('simInfo').textContent='이 폰트를 불러올 수 없어요.'}}));
+  document.querySelectorAll('.simMw').forEach(el=>el.addEventListener('input',()=>{MIXW[+el.dataset.si]=+el.value;$('mwo'+el.dataset.si).textContent=Math.round(el.value*100)+'%';simDraw()}));
+  document.querySelectorAll('[data-rm]').forEach(el=>el.addEventListener('click',()=>{const i=+el.dataset.rm;SRC.splice(i,1);SRC.push(null);MIXW.splice(i,1);MIXW.push(.5);if(!SRC[0]){$('simBody').classList.add('hide');$('simInfo').textContent=''}drawSrcs();syncS();prepMix();simDraw()}));
+  syncS()}
+ function nrm(F){const s=1000/F.upm;for(const ch of['가','나','H','A']){const gi=F.cm.get(ch.codePointAt(0));if(gi===undefined)continue;let y0=1e9,y1=-1e9;F.glyph(gi).forEach(ct=>ct.forEach(p=>{y0=Math.min(y0,p.y!==undefined?p.y:p[1]);y1=Math.max(y1,p.y!==undefined?p.y:p[1])}));if(y1>y0)return{h:(y1-y0)*s,cy:(y0+y1)/2*s}}return{h:700,cy:350}}
+ function prepMix(){const L=SRC.filter(Boolean);if(!L.length)return;const r0=L[0].n;L.forEach(S0=>{S0.a=r0.h/S0.n.h;S0.dy=r0.cy-S0.n.cy*S0.a})}
+ function setSrc(i,F,buf,name){F.__n=0;SRC[i]={F,buf,name,n:null};SRC[i].n=nrm(F);prepMix();$('simBody').classList.remove('hide');const L=SRC.filter(Boolean);$('simInfo').textContent=L.length>1?`폰트 ${L.length}개를 섞어요.`:`넣은 폰트: ${name} · 글자 ${F.cm.size.toLocaleString()}개`;if(i===0||!$('simNm').value)$('simNm').value=(L.length>1?L.map(x=>x.name).join('+').slice(0,30)+' 믹스':name+' 닮은꼴');else $('simNm').value=L.map(x=>x.name).join('+').slice(0,30)+' 믹스';drawSrcs();if(i===0&&L.length===1)rnd();else simDraw()}
+ const N0={uW:1,uH:1,uSl:0,uY:0};
+ function srcPolys(S0,gi){const s=S0.a,dy=S0.dy;return upFlat(S0.F,gi,N0).map(q=>q.map(p=>[p[0]*s,p[1]*s+dy]))}
+ function edt1(f,n,d,v,z){let k=0;v[0]=0;z[0]=-1e20;z[1]=1e20;for(let q=1;q<n;q++){let s2;while(true){const r=v[k];s2=((f[q]+q*q)-(f[r]+r*r))/(2*q-2*r);if(s2<=z[k]){k--;if(k<0){k=0;break}}else break}k++;v[k]=q;z[k]=s2;z[k+1]=1e20}k=0;for(let q=0;q<n;q++){while(z[k+1]<q)k++;const r=v[k];d[q]=(q-r)*(q-r)+f[r]}}
+ function edt(mask,W,H,want){const INF=1e12,g=new Float64Array(W*H),n=Math.max(W,H),f=new Float64Array(n),d=new Float64Array(n),v=new Int32Array(n),z=new Float64Array(n+1);for(let i=0;i<W*H;i++)g[i]=mask[i]===want?0:INF;
+  for(let x=0;x<W;x++){for(let y=0;y<H;y++)f[y]=g[y*W+x];edt1(f,H,d,v,z);for(let y=0;y<H;y++)g[y*W+x]=d[y]}
+  for(let y=0;y<H;y++){for(let x=0;x<W;x++)f[x]=g[y*W+x];edt1(f,W,d,v,z);for(let x=0;x<W;x++)g[y*W+x]=d[x]}return g}
+ let CV=null;const U=8;
+ function mixGlyph(cp){const L=[];SRC.forEach((S0,i)=>{if(!S0)return;const gi=S0.F.cm.get(cp);if(gi===undefined)return;L.push({S0,gi,w:i===0?1:MIXW[i]})});if(!L.length)return null;
+  const tw=L.reduce((a,b)=>a+b.w,0);let adv=0;L.forEach(o=>{o.w/=tw;o.adv=o.S0.F.adv(o.gi)*(1000/o.S0.F.upm)*o.S0.a;adv+=o.w*o.adv});
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;L.forEach(o=>{o.ps=srcPolys(o.S0,o.gi).map(q=>q.map(p=>[p[0]-o.adv/2+adv/2,p[1]]));o.ps.forEach(q=>q.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}))});
+  if(x0>x1)return{adv,ps:[]};if(L.length===1)return{adv,ps:L[0].ps};
+  x0-=4*U;y0-=4*U;x1+=4*U;y1+=4*U;const W=Math.ceil((x1-x0)/U)+1,H=Math.ceil((y1-y0)/U)+1;
+  if(!CV){CV=document.createElement('canvas')}if(CV.width<W)CV.width=W;if(CV.height<H)CV.height=H;const cx=CV.getContext('2d',{willReadFrequently:true});
+  const sd=new Float32Array(W*H);
+  L.forEach(o=>{cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,CV.width,CV.height);cx.setTransform(1/U,0,0,-1/U,-x0/U+.5,y1/U+.5);cx.beginPath();o.ps.forEach(q=>{cx.moveTo(q[0][0],q[0][1]);for(let i=1;i<q.length;i++)cx.lineTo(q[i][0],q[i][1]);cx.closePath()});cx.fillStyle='#000';cx.fill('nonzero');
+   const im=cx.getImageData(0,0,W,H).data,m=new Uint8Array(W*H);for(let i=0;i<W*H;i++)m[i]=im[i*4+3]>127?1:0;const dIn=edt(m,W,H,1),dOut=edt(m,W,H,0);
+   for(let i=0;i<W*H;i++){const v=m[i]?-(Math.sqrt(dOut[i])-.5):(Math.sqrt(dIn[i])-.5);sd[i]+=o.w*v}});
+  return{adv,ps:march(sd,W,H,x0,y1)}}
+ function march(v,W,H,x0,yT){const P=(i,j)=>[x0+i*U,yT-j*U],segs=new Map(),pt={};
+  const key=(a,b,c)=>a+','+b+','+c;
+  for(let j=0;j<H-1;j++)for(let i=0;i<W-1;i++){const C=[[i,j+1],[i+1,j+1],[i+1,j],[i,j]];const val=C.map(c=>v[c[1]*W+c[0]]);if(val.every(x=>x<0)||val.every(x=>x>=0))continue;
+   const cr=[];for(let e=0;e<4;e++){const A=C[e],B=C[(e+1)%4],va=val[e],vb=val[(e+1)%4],ia=va<0,ib=vb<0;if(ia===ib)continue;const t=va/(va-vb),pa=P(A[0],A[1]),pb=P(B[0],B[1]);const k=A[0]===B[0]?key('v',A[0],Math.min(A[1],B[1])):key('h',Math.min(A[0],B[0]),A[1]);pt[k]=[pa[0]+(pb[0]-pa[0])*t,pa[1]+(pb[1]-pa[1])*t];cr.push({k,exit:ia})}
+   for(let a=0;a<cr.length;a++)if(cr[a].exit){for(let b=1;b<=cr.length;b++){const c2=cr[(a+b)%cr.length];if(!c2.exit){segs.set(cr[a].k,c2.k);break}}}}
+  const loops=[],used=new Set();for(const st of segs.keys()){if(used.has(st))continue;const q=[];let k=st,g=0;while(k!==undefined&&!used.has(k)&&g++<1e6){used.add(k);q.push(pt[k]);k=segs.get(k)}if(q.length>=3)loops.push(q)}
+  let A=0;loops.forEach(q=>A+=fxArea(q));const out=A>0?loops.map(q=>q.slice().reverse()):loops;
+  return out.map(q=>{const n=q.length,o=[];for(let i=0;i<n;i++){const a=q[(i-1+n)%n],b=q[i],c=q[(i+1)%n];o.push([(a[0]+2*b[0]+c[0])/4,(a[1]+2*b[1]+c[1])/4])}return fxRdp(o,1.2)}).filter(q=>q.length>=3)}
+ function xf(ps,P){const W=P.uW||1,Hh=P.uH||1,Sl=P.uSl||0,Y=(P.uY||0)*1000;return ps.map(q=>q.map(p=>[p[0]*W+p[1]*Sl*Hh,p[1]*Hh+Y]))}
+ function glyphFor(cp,P,base){const S0=SRC[0];if(!S0)return null;const multi=SRC.filter(Boolean).length>1;let adv,ps,gi=S0.F.cm.get(cp);
+  if(!multi||base){if(gi===undefined)return null;adv=S0.F.adv(gi)*(1000/S0.F.upm);ps=upFlat(S0.F,gi,N0)}else{const m=mixGlyph(cp);if(!m)return null;adv=m.adv;ps=m.ps;if(gi===undefined)gi=cp}
+  if(base)return{adv,ps};ps=fxPost(xf(ps,P),gi,P);return{adv:adv*(P.uW||1)+(P.uTr||0)*1000+2*Math.max(0,P.uWt||0)+Math.max(0,P.uNib||0),ps}}
+ function line1(P,txt,h,base){let o='';for(const ch of txt){const cp=ch.codePointAt(0);let g=ch===' '?null:glyphFor(cp,P,base);let adv=g?g.adv:(ch===' '?(()=>{const S0=SRC[0],gi=S0.F.cm.get(32);return gi===undefined?300:S0.F.adv(gi)*(1000/S0.F.upm)})():300);adv=Math.max(1,adv);
+  const d=g?g.ps.map(q=>'M'+q.map(p=>p[0].toFixed(1)+' '+(880-p[1]).toFixed(1)).join('L')+'Z').join(''):'';o+=`<svg viewBox="0 0 ${adv.toFixed(1)} 1000" style="height:${h}px;width:${(adv/1000*h).toFixed(1)}px;overflow:visible" aria-hidden="true"><path d="${d}" fill="currentColor"/></svg>`}return o}
+ function line(P,txt,h,base){return txt.split(/(?<= )/).map(w=>`<span style="display:inline-flex;white-space:nowrap;align-items:flex-end;flex-wrap:wrap;max-width:100%">${line1(P,w,h,base)}</span>`).join('')}
+ function simDraw(){clearTimeout(tm);tm=setTimeout(()=>{if(!SRC[0])return;const t=$('simTxt').value||' ';$('simA').innerHTML=line(Z,t,40,true);$('simB').innerHTML=line(SP,t,40,false)},80)}
  $('simTxt').addEventListener('input',simDraw);
- function setSrc(F,buf,name){SF=F;SB=buf;SN=name;$('simBody').classList.remove('hide');$('simInfo').textContent=`넣은 폰트: ${name} · 글자 ${F.cm.size.toLocaleString()}개`;$('simNm').value=name+' 닮은꼴';rnd()}
- function rnd(){const r=(a,b)=>a+Math.random()*(b-a),q=(v,st)=>Math.round(v/st)*st;SP={...Z,uWt:q(r(-10,22),1),uRd:q(r(0,.7),.05),uWb:q(Math.random()<.65?r(2,10):0,.5),uW:q(r(.93,1.08),.01),uH:q(r(.96,1.04),.01),uSl:q(Math.random()<.6?r(-.03,.1):0,.01),uTr:q(r(-.01,.03),.005),uSeed:Math.floor(r(1,9999))};syncS();simDraw()}
- $('simRnd').onclick=rnd;$('simZero').onclick=()=>{SP={...Z,uSeed:SP.uSeed};syncS();simDraw()};
- function fillPick(){const ids=(FONTS.custom||[]).filter(id=>META(id)&&META(id).up);$('simPick').innerHTML='<option value="">고르기</option>'+ids.map(id=>`<option value="${id}">${(META(id).name||'').replace(/</g,'&lt;')}</option>`).join('')}
- $('simPick').onchange=async e=>{const id=e.target.value;if(!id)return;const m=META(id);$('simInfo').textContent='불러오는 중…';try{const buf=await idbGet(m.up);if(!buf)throw 0;setSrc(parseTTF(buf),buf,m.name||'올린 폰트')}catch(_){$('simInfo').textContent='이 폰트를 불러올 수 없어요.'}};
- $('simFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const buf=await f.arrayBuffer();try{setSrc(parseTTF(buf),buf,f.name.replace(/\.[^.]+$/,''))}catch(er){$('simInfo').textContent=er.message==='cff'?'OTF(CFF) 방식 글꼴은 아직 열 수 없어요. TTF를 넣어 주세요.':'이 파일은 TTF로 읽을 수 없어요.'}e.target.value=''});
- const open=()=>{fillPick();$('simDlg').classList.remove('hide');if(SF)simDraw()},close=()=>$('simDlg').classList.add('hide');
+ function rnd(){const k=+$('simAmt').value||1,r=(a,b)=>a+Math.random()*(b-a),q=(v,st)=>Math.round(v/st)*st,ch=p=>Math.random()<Math.min(1,p*k);
+  SP={...Z,uWt:q(r(-8,18)*k,1),uRd:q(Math.min(1,r(0,.5)*k),.05),uWb:q(ch(.7)?r(2,7)*k:0,.5),uNib:q(ch(.75)?r(10,28)*k:0,1),uNa:q(r(15,60),1),uDn:q(ch(.7)?Math.min(1,r(.2,.5)*k):0,.05),uSz:q(ch(.6)?Math.min(1,r(.2,.5)*k):0,.05),uW:q(1+r(-.07,.07)*k,.01),uH:q(1+r(-.03,.04)*k,.01),uSl:q(ch(.5)?r(-.03,.08)*k:0,.01),uTr:q(r(-.005,.02)*k,.005),uSeed:Math.floor(r(1,9999))};
+  for(let i=1;i<3;i++)if(SRC[i])MIXW[i]=q(r(.3,1),.05);syncS();simDraw()}
+ $('simRnd').onclick=rnd;$('simAmt').onchange=rnd;$('simZero').onclick=()=>{SP={...Z,uSeed:SP.uSeed};syncS();simDraw()};
+ const open=()=>{drawSrcs();$('simDlg').classList.remove('hide');if(SRC[0])simDraw()},close=()=>$('simDlg').classList.add('hide');
  $('modeSim').onclick=open;$('simX').onclick=close;$('simDlg').addEventListener('click',e=>{if(e.target.id==='simDlg')close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('simDlg').classList.contains('hide'))close()});
- $('simGo').onclick=async()=>{if(!SB)return;$('simGo').disabled=true;const err=await addUpFont(SB.slice(0),SN,{...SP},($('simNm').value||SN+' 닮은꼴').trim());$('simGo').disabled=false;if(err){$('simInfo').textContent=err;return}try{$('fname').value=META(FONTS.active).name}catch(_){}close();try{refresh()}catch(_){}}}
+ $('simGo').onclick=async()=>{const L=SRC.filter(Boolean);if(!L.length)return;const btn=$('simGo');btn.disabled=true;const nm=($('simNm').value||L[0].name+' 닮은꼴').trim();let buf;
+  try{if(L.length===1){buf=L[0].buf.slice(0)}else{const cps=new Set();L.forEach(S0=>S0.F.cm.forEach((g,cp)=>{if(cp>32&&cp<0x10000&&!(cp>=0xD800&&cp<0xE000))cps.add(cp)}));const list=[...cps].sort((a,b)=>a-b);
+    const sp=L[0].F.cm.get(32),spAdv=sp===undefined?300:Math.round(L[0].F.adv(sp)*(1000/L[0].F.upm));const glyphs=[{adv:600,cs:[[[50,-120],[50,880],[550,880],[550,-120]],[[100,-70],[500,-70],[500,830],[100,830]]]},{adv:spAdv,cs:[]}],map=[[32,1]];
+    for(let i=0;i<list.length;i+=120){list.slice(i,i+120).forEach(cp=>{const m=mixGlyph(cp);if(!m)return;map.push([cp,glyphs.length]);glyphs.push({adv:Math.max(1,Math.round(m.adv)),cs:m.ps.map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]))})});
+     $('simProg').style.width=Math.round(i/list.length*100)+'%';$('simInfo').textContent=`글자 섞는 중… ${Math.min(i+120,list.length).toLocaleString()} / ${list.length.toLocaleString()}`;await new Promise(r=>setTimeout(r,0))}
+    const out=makeTTF(nm,glyphs,map);buf=out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength)}
+   const err=await addUpFont(buf,nm,{...SP},nm);if(err){$('simInfo').textContent=err;btn.disabled=false;return}try{$('fname').value=META(FONTS.active).name}catch(_){}
+   $('simProg').style.width='100%';$('simInfo').textContent='다 만들었어요!';close();try{refresh()}catch(_){}}catch(e){$('simInfo').textContent='만드는 중 문제가 생겼어요: '+(e&&e.message||e)}btn.disabled=false}}
 
 function alertMsg(t){const el=$('saveStat');if(el){el.textContent=t;el.style.color='var(--grid)';setTimeout(()=>el.style.color='',4000)}}
 (FONTS.custom||[]).forEach(id=>{const m=META(id);if(m&&m.up)loadUpFont(m.up)});
