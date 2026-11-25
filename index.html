@@ -300,6 +300,21 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
  </div>
 </section>
 <section class="band ed-only up-only" style="padding-top:0" aria-label="올린 폰트 설정">
+<div class="wrap card" style="margin-bottom:18px">
+  <h2>한 글자씩 고치기</h2>
+  <p class="mute" style="font-size:13px;margin:0 0 8px">아래 글자를 누르면 그 글자가 편집창에 열려요. 칸에 원하는 문장을 쓰면 그 글자들이 나와요. 고친 글자는 파란 테두리로 보여요.</p>
+  <input type="text" id="gList" aria-label="고를 글자들" value="여백 꾸불 무료 폰트 가나다라마바사아자차카타파하" style="width:100%">
+  <div id="gTiles" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px"></div>
+  <div id="gEd">
+   
+   <p class="mute" style="font-size:13px;margin:0 0 8px">아무 글자나 골라서 점을 끌어 모양을 고쳐요. 획(검은 부분)을 끌면 그 획이 통째로 움직여요. 고친 글자는 저장되고 TTF에도 들어가요.</p>
+   <div class="row" style="gap:6px"><button id="gPrev" aria-label="이전 글자">◀</button><input type="text" id="gCh" maxlength="1" value="가" aria-label="고칠 글자" style="width:3.2em;font-size:22px;text-align:center"><button id="gNext" aria-label="다음 글자">▶</button>
+    <label class="toggle"><input type="checkbox" id="gSoft" checked> 부드럽게 끌기</label><span id="gMsg" class="mute" style="font-size:13px"></span></div>
+   <div style="background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:8px;touch-action:none;max-width:520px"><svg id="gSvg" style="width:100%;display:block;touch-action:none" viewBox="-150 -120 1300 1240"></svg></div>
+   <div class="row" style="gap:6px;margin-top:8px"><button data-g="big">선택 획 크게</button><button data-g="small">작게</button><button data-g="fat">두껍게</button><button data-g="thin">얇게</button><button data-g="smooth">매끈하게</button><button data-g="del">선택 획 지우기</button></div>
+   <div class="row" style="gap:6px;margin-top:6px"><button data-g="up">↑</button><button data-g="down">↓</button><button data-g="left">←</button><button data-g="right">→</button><button data-g="wide">글자 폭 +</button><button data-g="narrow">글자 폭 −</button><button data-g="reset">이 글자 원래대로</button></div>
+  </div>
+ </div>
  <div class="wrap card">
   <h2>올린 폰트 다듬기</h2>
   <p class="tgt" id="upTarget"></p>
@@ -316,15 +331,7 @@ html,body{overflow-x:hidden;max-width:100%}header.band,main,section.band{max-wid
    <div class="row"><button id="upPtReset">이 부분 처음으로</button><button id="upPtClear">이 글자만 고친 것 지우기</button><span id="upPtMsg" class="mute" style="font-size:13px"></span></div>
    <div id="upPtPrev" style="display:flex;flex-wrap:wrap;gap:4px;align-items:flex-end;background:var(--paper);border-radius:12px;padding:10px;margin-top:8px;min-height:90px"></div>
   </div>
-  <div id="gEd" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
-   <h3 style="margin:0 0 6px;font-size:17px">글자 하나씩 직접 고치기</h3>
-   <p class="mute" style="font-size:13px;margin:0 0 8px">아무 글자나 골라서 점을 끌어 모양을 고쳐요. 획(검은 부분)을 끌면 그 획이 통째로 움직여요. 고친 글자는 저장되고 TTF에도 들어가요.</p>
-   <div class="row" style="gap:6px"><button id="gPrev" aria-label="이전 글자">◀</button><input type="text" id="gCh" maxlength="1" value="가" aria-label="고칠 글자" style="width:3.2em;font-size:22px;text-align:center"><button id="gNext" aria-label="다음 글자">▶</button>
-    <label class="toggle"><input type="checkbox" id="gSoft" checked> 부드럽게 끌기</label><span id="gMsg" class="mute" style="font-size:13px"></span></div>
-   <div style="background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:8px;touch-action:none;max-width:520px"><svg id="gSvg" style="width:100%;display:block;touch-action:none" viewBox="-150 -120 1300 1240"></svg></div>
-   <div class="row" style="gap:6px;margin-top:8px"><button data-g="big">선택 획 크게</button><button data-g="small">작게</button><button data-g="fat">두껍게</button><button data-g="thin">얇게</button><button data-g="smooth">매끈하게</button><button data-g="del">선택 획 지우기</button></div>
-   <div class="row" style="gap:6px;margin-top:6px"><button data-g="up">↑</button><button data-g="down">↓</button><button data-g="left">←</button><button data-g="right">→</button><button data-g="wide">글자 폭 +</button><button data-g="narrow">글자 폭 −</button><button data-g="reset">이 글자 원래대로</button></div>
-  </div>
+
  </div>
 </section>
 <section class="band ed-only bmp-only" style="padding-top:0" aria-label="픽셀 편집기">
@@ -1656,7 +1663,7 @@ function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')re
   const d=O.c.map(q=>'M'+q.map(p=>p[0]+' '+(880-p[1])).join('L')+'Z').join('');h+=`<path d="${d}" fill="#111" fill-rule="nonzero" opacity=".88"/>`;
   O.c.forEach((q,ci)=>{h+=`<path d="M${q.map(p=>p[0]+' '+(880-p[1])).join('L')}Z" fill="transparent" stroke="${ci===sel?'#2c4bd8':'none'}" stroke-width="6" data-c="${ci}" style="cursor:move"/>`});
   if(sel>=0&&O.c[sel])O.c[sel].forEach((p,pi)=>{h+=`<circle cx="${p[0]}" cy="${880-p[1]}" r="11" fill="#fff" stroke="#2c4bd8" stroke-width="4" data-c="${sel}" data-p="${pi}"/><circle cx="${p[0]}" cy="${880-p[1]}" r="26" fill="transparent" data-c="${sel}" data-p="${pi}" style="cursor:grab"/>`});
-  sv.innerHTML=h;const n=Object.keys(S.comps).filter(k=>k.startsWith('g:')).length;$('gMsg').textContent=(upOv(ch())?'고친 글자 · ':'')+(n?`직접 고친 글자 ${n}개`:'')+(sel<0?' · 획을 눌러 고르세요':'')}
+  sv.innerHTML=h;try{tiles()}catch(_){}const n=Object.keys(S.comps).filter(k=>k.startsWith('g:')).length;$('gMsg').textContent=(upOv(ch())?'고친 글자 · ':'')+(n?`직접 고친 글자 ${n}개`:'')+(sel<0?' · 획을 눌러 고르세요':'')}
  function pt(e){const r=sv.getBoundingClientRect(),vb=sv.viewBox.baseVal;return[vb.x+(e.clientX-r.left)/r.width*vb.width,880-(vb.y+(e.clientY-r.top)/r.height*vb.height)]}
  sv.addEventListener('pointerdown',e=>{const t=e.target,c=t.dataset?t.dataset.c:undefined;if(c===undefined){sel=-1;draw();return}const O=cur();if(!O)return;pushUndo();const O2={c:O.c.map(q=>q.map(p=>p.slice())),a:O.a};sel=+c;drag={O:O2,p0:pt(e),pi:t.dataset.p!==undefined?+t.dataset.p:-1,orig:O2.c[sel].map(p=>p.slice())};sv.setPointerCapture(e.pointerId);e.preventDefault();draw()});
  sv.addEventListener('pointermove',e=>{if(!drag)return;const q=pt(e),dx=q[0]-drag.p0[0],dy=q[1]-drag.p0[1],C=drag.O.c[sel],o=drag.orig,n=o.length;
@@ -1676,7 +1683,9 @@ function fmtU(k,v){if(k==='uWt')return(v>0?'+':'')+Math.round(v);if(k==='uRd')re
   O.c=O.c.map(q=>q.map(p=>[Math.round(p[0]),Math.round(p[1])]));commit(O);draw()}
  document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>tool(b.dataset.g)));
  const step=d=>{let c=ch().codePointAt(0)+d;const F=curUp();if(F&&F.cm){let g=0;while(!F.cm.has(c)&&g++<2000)c+=d}$('gCh').value=String.fromCodePoint(c);sel=-1;draw()};$('gPrev').onclick=()=>step(-1);$('gNext').onclick=()=>step(1);$('gCh').addEventListener('input',()=>{sel=-1;draw()});
- window.__gEdDraw=draw}
+ function tiles(){const box=$('gTiles');if(!box||!isUp(FONTS.active))return;const cs=[...new Set([...($('gList').value||'')].filter(c=>c.trim()))].slice(0,80);box.innerHTML=cs.map(c=>`<button data-gc="${c}" style="min-height:0;padding:4px;border-radius:10px;border:2px solid ${S.comps['g:'+c]?'#2c4bd8':(c===ch()?'#999':'var(--line)')};background:#fff;color:#111;width:56px;height:62px;display:flex;align-items:center;justify-content:center" aria-label="${c} 고치기">${upSVG(c,44)||c}</button>`).join('');box.querySelectorAll('[data-gc]').forEach(b=>b.onclick=()=>{$('gCh').value=b.dataset.gc;sel=-1;draw();$('gSvg').scrollIntoView({block:'center',behavior:'smooth'})})}
+ $('gList').addEventListener('input',tiles);
+ window.__gEdDraw=()=>{draw();tiles()}}
 $('upReset').onclick=()=>{pushUndo();UPS.forEach(([k,,,,,d])=>S.p[k]=d);refresh();persist()};
 async function loadUpFont(key){if(UPF[key]&&!UPF[key].loading)return;UPF[key]={loading:1};try{const buf=await idbGet(key);if(!buf)throw 0;UPF[key]=parseTTF(buf)}catch(e){UPF[key]={loading:0,failed:1,cm:new Map(),glyph:()=>[],adv:()=>500,upm:1000}}refresh()}
 async function addUpFont(buf,fileName,ex,nmO){ex=ex||{};let F;try{F=parseTTF(buf)}catch(e){return e.message==='cff'?'이 파일은 OTF 방식(CFF) 글꼴이라 아직 열 수 없어요. TTF로 된 파일을 올려 주세요.':'이 파일은 TTF로 읽을 수 없어요.'}
