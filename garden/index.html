@@ -146,7 +146,7 @@ const CON={
  'ㅇ':k=>'O.5 .5 .44 .44',
  'ㅈ':k=>k==='v'?'M.06 .1 L.9 .1 M.52 .12 Q.48 .62 .02 .96 M.5 .5 Q.7 .8 .98 .94':'M.04 .1 L.96 .1 M.5 .12 Q.42 .64 .02 .95 M.5 .44 Q.62 .78 .98 .95',
  'ㅊ':k=>k==='v'?'M.5 0 L.5 .1 M.06 .24 L.9 .24 M.52 .26 Q.48 .66 .02 .97 M.5 .58 Q.7 .84 .98 .95':'M.5 0 L.5 .1 M.04 .24 L.96 .24 M.5 .26 Q.42 .68 .02 .96 M.5 .54 Q.62 .8 .98 .96',
- 'ㅋ':k=>(k==='v'?'M.04 .1 L.84 .1 Q.95 .1 .93 .26 Q.86 .7 .3 .98 M.06 .5 L.86 .5':'M.04 .12 L.94 .12 L.94 .96 M.04 .54 L.92 .54'),
+ 'ㅋ':(k,P)=>{const e=v=>Math.round(v*1000)/1000;return k==='v'?'M.04 .1 L.84 .1 Q.95 .1 .93 .26 Q.86 .7 .3 .98 M.06 .5 L'+e(.86-.32*P.kg)+' .5':'M.04 .12 L.94 .12 L.94 .96 M.04 .54 L'+e(.92-.34*P.kg)+' .54'},
  'ㅌ':k=>'M.94 .08 L.08 .08 L.08 .9 L.96 .9 M.08 .49 L.9 .49',
  'ㅍ':k=>'M.04 .08 L.96 .08 M.3 .1 L.3 .9 M.7 .1 L.7 .9 M.02 .9 L.98 .9',
  'ㅎ':k=>'M.5 0 L.5 .1 M.1 .23 L.9 .23 O.5 .65 .32 .28',
@@ -260,7 +260,7 @@ function shape(subs,map,P,key){const R=rng(hs(key+'|'+P.seed)),out=[];const jit=
 function boxMap(b){return p=>[b.x0+p[0]*(b.x1-b.x0),b.y0+p[1]*(b.y1-b.y0)]}
 function conStrokes(J,kind,b,P,key){const d=DBL[J];if(d){const g=Math.max(P.w*.9,(b.x1-b.x0)*.08),mid=(b.x0+b.x1)/2;const L={...b,x1:mid-g/2},Rb={...b,x0:mid+g/2};
   return[...conStrokes(d[0],kind==='v'?'h':kind,L,P,key+'a'),...conStrokes(d[1],kind,Rb,P,key+'b')]}
- return shape(parse(CON[J](kind)),boxMap(b),P,key+J+kind)}
+ return shape(parse(CON[J](kind,P)),boxMap(b),P,key+J+kind)}
 // ㅔ·ㅖ 두 줄기 간격(eg: -1 좁게 ~ 0 기본 ~ 1 넓게)
 const eS1=P=>.46-(P.eg>0?.14:.06)*P.eg,eS2=P=>Math.min(.95,.86+(P.eg>0?.08:.03)*P.eg),eVW=P=>.42+(P.eg>0?.08:.03)*P.eg;
 const vwOf=(V,P)=>V==='ㅔ'||V==='ㅖ'?eVW(P):VW[V],stemOf=(V,P)=>V==='ㅔ'||V==='ㅖ'?eS1(P):STEM[V];
@@ -370,7 +370,7 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
  return{cs,adv:G.adv+P.track}}
 
 // ---- 기본값 ----
-const DEF={rW:1,rH:1,hg:0,eg:0,w:70,pen:'round',contrast:0,adv:880,size:.885,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.87,latW:.77,xh:.79,track:0,cell:62.5,pxT:1};
+const DEF={kg:0,rW:1,rH:1,hg:0,eg:0,w:70,pen:'round',contrast:0,adv:880,size:.885,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.87,latW:.77,xh:.79,track:0,cell:62.5,pxT:1};
 function norm(p){const P={...DEF,...p};if(p.num===undefined)P.num=Math.round(P.lat*.968*1000)/1000;if(p.lcW===undefined)P.lcW=1;if(p.latSp===undefined)P.latSp=1;if(p.numSp===undefined)P.numSp=1;if(p.lcS===undefined)P.lcS=P.latW;if(p.xh===undefined&&p.lat!==undefined)P.xh=1;if(p.numW===undefined)P.numW=Math.min(1.3,Math.round(P.latW*1.17*1000)/1000);if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
 // 미리 계산된 키
 function glyph(ch,p){return build(ch,norm(p))}
@@ -441,7 +441,7 @@ const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clear
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
 
 // ---- 범위와 분위기 ----
-const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[760,1100],size:[.74,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.6,1.3],latW:[.6,1.4],num:[.6,1.3],numW:[.6,1.5],xh:[.6,1.1],rW:[.7,1.25],rH:[.7,1.4],latSp:[.6,2],numSp:[.6,2],lcS:[.6,1.4],lcW:[.6,2],hg:[-.5,1],track:[-60,120],grid:[10,24],pxT:[1,2]};
+const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[760,1100],size:[.74,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.6,1.3],latW:[.6,1.4],num:[.6,1.3],numW:[.6,1.5],xh:[.6,1.1],rW:[.7,1.25],kg:[0,1],rH:[.7,1.4],latSp:[.6,2],numSp:[.6,2],lcS:[.6,1.4],lcW:[.6,2],hg:[-.5,1],track:[-60,120],grid:[10,24],pxT:[1,2]};
 const INT={grid:1,pxT:1,adv:1,track:1,w:1};
 const MOODS={
  all:{label:'✨ 전체'},
@@ -505,7 +505,7 @@ function renderKeep(){const g=$('keepGrid');if(!ST.keep.length){g.innerHTML='<di
 // ---- 다듬기 ----
 const SL={edSl1:[['w','굵기',30,125,1,v=>v],['contrast','가로획 가늘게',0,.8,.01,v=>Math.round(v*100)+'%'],['grid','픽셀 칸 수',10,24,1,v=>v+'칸'],['pxT','픽셀 굵기',1,2,1,v=>v+'칸']],
  edSl2:[['corner','모서리 둥글게',0,1,.01,v=>Math.round(v*100)+'%'],['curve','획 휘어짐',0,1,.01,v=>Math.round(v*100)+'%'],['wobble','손떨림',0,1,.01,v=>Math.round(v*100)+'%'],['bounce','통통 튀기',0,1,.01,v=>Math.round(v*100)+'%'],['slant','기울기',-.05,.2,.005,v=>Math.round(v*100)+'%']],
- edSl3:[['adv','글자 폭',760,1100,5,v=>v],['size','글자 크기',.74,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['rW','받침 ㄹ 가로',.7,1.25,.01,v=>Math.round(v*100)+'%'],['rH','받침 ㄹ 세로',.7,1.4,.01,v=>Math.round(v*100)+'%'],['hg','자음과 모음 사이',-.5,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['eg','ㅔ 두 줄기 간격',-1,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['track','자간',-60,120,2,v=>v]],
+ edSl3:[['adv','글자 폭',760,1100,5,v=>v],['size','글자 크기',.74,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['kg','ㅋ 가운데 획 띄우기',0,1,.02,v=>Math.round(v*100)+'%'],['rW','받침 ㄹ 가로',.7,1.25,.01,v=>Math.round(v*100)+'%'],['rH','받침 ㄹ 세로',.7,1.4,.01,v=>Math.round(v*100)+'%'],['hg','자음과 모음 사이',-.5,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['eg','ㅔ 두 줄기 간격',-1,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['track','자간',-60,120,2,v=>v]],
  edSl4:[['lat','영문 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['latSp','영문 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['latW','영문 옆으로 늘리기',.6,1.4,.01,v=>Math.round(v*100)+'%'],['xh','소문자 높이',.6,1.1,.01,v=>Math.round(v*100)+'%'],['lcW','소문자 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['lcS','소문자 옆으로 늘리기',.6,1.4,.01,v=>Math.round(v*100)+'%'],['num','숫자 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['numSp','숫자 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['numW','숫자 옆으로 늘리기',.6,1.5,.01,v=>Math.round(v*100)+'%']]};
 Object.entries(SL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl" data-k="${k}"><label for="s_${k}">${lab}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="o_${k}"></output></div>`).join('')});
 const ALLSL=Object.values(SL).flat();let edUndo=[],edRedo=[],slT=0,dragging=false;
