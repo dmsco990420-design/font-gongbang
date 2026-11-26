@@ -91,6 +91,8 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
   </div>
   <div>
    <div class="sec"><h2>펜</h2><div class="seg" id="edPen"><button data-pen="round">둥근펜</button><button data-pen="square">네모펜</button><button data-pen="brush">붓펜</button><button data-pen="pixel">픽셀</button></div><div id="edSl1"></div></div>
+   <div class="sec"><h2>뼈대 모양 <small class="mute" style="font-weight:400">눌러서 바꿔요</small></h2><div id="edGenes"></div></div>
+   <div class="sec"><h2>짜임새</h2><div id="edSl5"></div></div>
    <div class="sec"><h2>손맛</h2><div id="edSl2"></div><button id="edSeed" style="margin-top:6px">🎲 손떨림 무늬 바꾸기</button></div>
    <div class="sec"><h2>모양과 자리</h2><div id="edSl3"></div></div>
    <div class="sec"><h2>영문·숫자</h2><div id="edSl4"></div></div>
@@ -133,31 +135,48 @@ const CHO='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ',JUNG='ㅏ�
  VV='ㅏㅐㅑㅒㅓㅔㅕㅖㅣ',HV='ㅗㅛㅜㅠㅡ',MV={'ㅘ':'ㅗㅏ','ㅙ':'ㅗㅐ','ㅚ':'ㅗㅣ','ㅝ':'ㅜㅓ','ㅞ':'ㅜㅔ','ㅟ':'ㅜㅣ','ㅢ':'ㅡㅣ'};
 
 // ---- 자음 뼈대 (상자 안 0~1, y 아래로) : kind v(세로모음 옆) h(가로모음 위) j(받침) ----
+// ---- 자음 뼈대 변형(유전자) : 상자 안 0~1, y 아래로. kind v(세로모음 옆) h(가로모음 위) j(받침) ----
+const sub=(p,b)=>({p,b});
+const TICK={v:'M.5 0 L.5 1',h:'M.2 .55 L.8 .55',dot:'D.5 .6',slant:'M.32 0 L.68 1'};
+const OSH={free:'O.5 .5 .44 .44',rsq:'M.32 .06 L.68 .06 Q.94 .06 .94 .32 L.94 .68 Q.94 .94 .68 .94 L.32 .94 Q.06 .94 .06 .68 L.06 .32 Q.06 .06 .32 .06 Z',small:'O.5 .58 .34 .34',egg:'M.5 .06 Q.88 .06 .92 .56 Q.94 .94 .5 .94 Q.06 .94 .08 .56 Q.12 .06 .5 .06 Z'};
+const SSH={fork:k=>k==='v'?'M.54 .04 Q.5 .6 .02 .96 M.52 .48 Q.7 .8 .98 .94':'M.5 .04 Q.42 .62 .02 .95 M.5 .4 Q.62 .76 .98 .95',
+ tent:k=>'M.5 .04 Q.4 .58 .02 .96 M.5 .04 Q.6 .58 .98 .96',
+ hand:k=>k==='v'?'M.58 .04 Q.46 .72 .04 .96 M.44 .56 L.96 .9':'M.55 .04 Q.44 .7 .03 .95 M.46 .5 L.97 .92',
+ angle:k=>'M.5 .04 L.04 .95 M.5 .04 L.96 .95'};
+const KSH={sq:k=>k==='v'?'M.04 .1 L.9 .1 L.9 .96':'M.04 .12 L.94 .12 L.94 .96',
+ sweep:k=>k==='v'?'M.04 .1 L.84 .1 Q.95 .1 .93 .26 Q.86 .7 .3 .98':'M.04 .12 L.86 .12 Q.95 .12 .95 .3 L.95 .96',
+ diag:k=>k==='v'?'M.04 .1 L.92 .1 L.4 .98':'M.04 .12 L.94 .12 L.8 .96',
+ hook:k=>k==='v'?'M.06 .17 Q.5 .05 .92 .1 Q.92 .62 .5 .98':'M.04 .17 Q.5 .07 .94 .12 Q.97 .6 .9 .96'};
+const DSH={sq:'M.94 .1 L.08 .1 L.08 .9 L.96 .9',round:'M.94 .1 L.08 .1 L.08 .56 Q.08 .9 .42 .9 L.96 .9',hand:'M.9 .07 L.1 .12 L.08 .9 L.96 .85'};
+const G0={k:'sq',n:'flat',d:'sq',r:'sq',m:'sq',b:'std',s:'fork',j:'top',o:'free',t:'v',p:'std',v:'line'};
+const GENES={k:['sq','sweep','diag','hook'],n:['flat','up','round'],d:['sq','round','hand'],r:['sq','round','hand'],m:['sq','round','trap'],b:['std','round','splay'],s:['fork','tent','hand','angle'],j:['top','z'],o:['free','rsq','small','egg'],t:['v','h','dot','slant'],p:['std','slant','hand'],v:['line','short','dot']};
 const CON={
- 'ㄱ':k=>k==='v'?'M.04 .1 L.84 .1 Q.95 .1 .93 .26 Q.86 .7 .3 .98':'M.04 .12 L.94 .12 L.94 .96',
- 'ㄴ':k=>'M.1 .02 L.1 .88 L.98 .88',
- 'ㄷ':k=>'M.94 .1 L.08 .1 L.08 .9 L.96 .9',
- 'ㄹ':k=>'M.06 .07 L.9 .07 L.9 .48 L.1 .48 L.1 .92 L.96 .92',
- 'ㅁ':k=>'M.08 .08 L.92 .08 L.92 .92 L.08 .92 Z',
- 'ㅂ':k=>'M.1 .02 L.1 .92 L.9 .92 L.9 .02 M.1 .47 L.9 .47',
- 'ㅅ':k=>k==='v'?'M.54 .04 Q.5 .6 .02 .96 M.52 .48 Q.7 .8 .98 .94':'M.5 .04 Q.42 .62 .02 .95 M.5 .4 Q.62 .76 .98 .95',
- 'ㅇ':k=>'O.5 .5 .44 .44',
- 'ㅈ':k=>k==='v'?'M.06 .1 L.9 .1 M.52 .12 Q.48 .62 .02 .96 M.5 .5 Q.7 .8 .98 .94':'M.04 .1 L.96 .1 M.5 .12 Q.42 .64 .02 .95 M.5 .44 Q.62 .78 .98 .95',
- 'ㅊ':k=>k==='v'?'M.5 0 L.5 .1 M.06 .24 L.9 .24 M.52 .26 Q.48 .66 .02 .97 M.5 .58 Q.7 .84 .98 .95':'M.5 0 L.5 .1 M.04 .24 L.96 .24 M.5 .26 Q.42 .68 .02 .96 M.5 .54 Q.62 .8 .98 .96',
- 'ㅋ':k=>(k==='v'?'M.04 .1 L.84 .1 Q.95 .1 .93 .26 Q.86 .7 .3 .98 M.06 .5 L.86 .5':'M.04 .12 L.94 .12 L.94 .96 M.04 .54 L.92 .54'),
- 'ㅌ':k=>'M.94 .08 L.08 .08 L.08 .9 L.96 .9 M.08 .49 L.9 .49',
- 'ㅍ':k=>'M.04 .08 L.96 .08 M.3 .1 L.3 .9 M.7 .1 L.7 .9 M.02 .9 L.98 .9',
- 'ㅎ':k=>'M.5 0 L.5 .1 M.1 .23 L.9 .23 O.5 .65 .32 .28',
+ 'ㄱ':(k,G)=>KSH[G.k](k),
+ 'ㅋ':(k,G)=>KSH[G.k](k)+(k==='v'?(G.k==='sq'?' M.04 .52 L.86 .52':' M.06 .5 L.72 .5'):(G.k==='diag'?' M.04 .54 L.84 .54':' M.04 .54 L.9 .54')),
+ 'ㄴ':(k,G)=>({flat:'M.1 .02 L.1 .88 L.98 .88',up:'M.1 .02 L.1 .8 Q.11 .9 .3 .9 L.98 .8',round:'M.1 .02 L.1 .56 Q.1 .9 .46 .9 L.98 .9'})[G.n],
+ 'ㄷ':(k,G)=>DSH[G.d],
+ 'ㅌ':(k,G)=>DSH[G.d]+' M.08 .49 L.88 .49',
+ 'ㄹ':(k,G)=>({sq:'M.06 .07 L.9 .07 L.9 .48 L.1 .48 L.1 .92 L.96 .92',round:'M.06 .07 L.66 .07 Q.92 .07 .92 .28 Q.92 .48 .66 .48 L.34 .48 Q.1 .48 .1 .7 Q.1 .92 .34 .92 L.96 .92',hand:'M.06 .09 L.9 .06 L.86 .46 L.12 .5 L.1 .92 L.96 .88'})[G.r],
+ 'ㅁ':(k,G)=>({sq:'M.08 .08 L.92 .08 L.92 .92 L.08 .92 Z',round:'M.32 .08 L.68 .08 Q.92 .08 .92 .32 L.92 .68 Q.92 .92 .68 .92 L.32 .92 Q.08 .92 .08 .68 L.08 .32 Q.08 .08 .32 .08 Z',trap:'M.04 .08 L.96 .08 L.86 .92 L.14 .92 Z'})[G.m],
+ 'ㅂ':(k,G)=>({std:'M.1 .02 L.1 .92 L.9 .92 L.9 .02 M.1 .47 L.9 .47',round:'M.1 .02 L.1 .66 Q.1 .92 .36 .92 L.64 .92 Q.9 .92 .9 .66 L.9 .02 M.1 .45 L.9 .45',splay:'M.03 .02 L.13 .92 L.87 .92 L.97 .02 M.08 .47 L.92 .47'})[G.b],
+ 'ㅅ':(k,G)=>SSH[G.s](k),
+ 'ㅈ':(k,G)=>G.j==='z'?'M.06 .1 L.88 .1 L.08 .95 M.5 .52 L.96 .93':[sub(k==='v'?'M.06 .1 L.9 .1':'M.04 .1 L.96 .1',[0,0,1,1]),sub(SSH[G.s](k),[0,.14,1,1])],
+ 'ㅊ':(k,G)=>[sub(TICK[G.t],[.4,0,.6,.12]),sub(CON['ㅈ'](k,G),[0,.2,1,1])],
+ 'ㅇ':(k,G)=>OSH[G.o],
+ 'ㅎ':(k,G)=>[sub(TICK[G.t],[.4,0,.6,.11]),sub('M.1 .5 L.9 .5',[0,0,1,.46]),sub(OSH[G.o],[.15,.34,.85,1])],
+ 'ㅍ':(k,G)=>({std:'M.04 .08 L.96 .08 M.3 .1 L.3 .9 M.7 .1 L.7 .9 M.02 .9 L.98 .9',slant:'M.04 .08 L.96 .08 M.28 .1 L.36 .9 M.72 .1 L.64 .9 M.02 .9 L.98 .9',hand:'M.04 .08 L.96 .1 M.3 .12 L.4 .88 M.72 .12 L.62 .88 M.02 .9 L.98 .87'})[G.p],
 };
-// ---- 모음 뼈대 ----
-const VOW={
- 'ㅏ':'M.3 0 L.3 1 M.3 .47 L.86 .47','ㅑ':'M.3 0 L.3 1 M.3 .35 L.86 .35 M.3 .62 L.86 .62',
- 'ㅓ':'M.7 0 L.7 1 M.12 .47 L.7 .47','ㅕ':'M.7 0 L.7 1 M.12 .35 L.7 .35 M.12 .62 L.7 .62',
- 'ㅣ':'M.5 0 L.5 1',
- 'ㅐ':'M.22 .03 L.22 .93 M.22 .47 L.56 .47 M.84 0 L.84 1','ㅒ':'M.22 .03 L.22 .93 M.22 .35 L.56 .35 M.22 .62 L.56 .62 M.84 0 L.84 1',
- 'ㅔ':'M.1 .47 L.46 .47 M.46 .03 L.46 .93 M.86 0 L.86 1','ㅖ':'M.08 .35 L.46 .35 M.08 .62 L.46 .62 M.46 .03 L.46 .93 M.86 0 L.86 1',
- 'ㅗ':'M.5 0 L.5 1 M0 1 L1 1','ㅛ':'M.32 0 L.32 1 M.68 0 L.68 1 M0 1 L1 1',
- 'ㅜ':'M0 0 L1 0 M.5 0 L.5 1','ㅠ':'M0 0 L1 0 M.32 0 L.32 1 M.68 0 L.68 1','ㅡ':'M0 .5 L1 .5'};
+// ---- 모음 뼈대 (줄기 길이·곁줄기 길이/높이·꼭지 길이 조절) ----
+const VSET='ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅛㅜㅠㅡㅣ';
+function vowPath(V,P){const gv=P.G.v,bl=P.bl*(gv==='short'?.62:1),bp=P.bp,t=P.vs*.18,bt=1-P.vs*.07,f=v=>Math.round(v*1000)/1000;
+ const st=(x,a=t,b=bt)=>`M${f(x)} ${f(a)} L${f(x)} ${f(b)} `,u=P.stub;
+ const br=(x0,x1,y)=>{if(gv!=='dot')return`M${f(x0)} ${f(y)} L${f(x1)} ${f(y)} `;const sx=Math.abs(x0-.3)<.02||Math.abs(x0-.22)<.02?x0:x1;const ex=sx===x0?x1:x0;return`E${f(sx+(ex-sx)*.82)} ${f(y)} `};
+ switch(V){case 'ㅏ':return st(.3)+br(.3,.3+.56*bl,bp);case 'ㅑ':return st(.3)+br(.3,.3+.56*bl,bp-.13)+br(.3,.3+.56*bl,bp+.14);
+ case 'ㅓ':return st(.7)+br(.7-.58*bl,.7,bp);case 'ㅕ':return st(.7)+br(.7-.58*bl,.7,bp-.13)+br(.7-.58*bl,.7,bp+.14);case 'ㅣ':return st(.5);
+ case 'ㅐ':return st(.22,t+.03,bt-.07)+br(.22,.22+.34*bl,bp)+st(.84);case 'ㅒ':return st(.22,t+.03,bt-.07)+br(.22,.22+.34*bl,bp-.12)+br(.22,.22+.34*bl,bp+.13)+st(.84);
+ case 'ㅔ':return br(.46-.36*bl,.46,bp)+st(.46,t+.03,bt-.07)+st(.86);case 'ㅖ':return br(.46-.38*bl,.46,bp-.12)+br(.46-.38*bl,.46,bp+.13)+st(.46,t+.03,bt-.07)+st(.86);
+ case 'ㅗ':return `M.5 ${f(1-u)} L.5 1 M0 1 L1 1`;case 'ㅛ':return `M.32 ${f(1-u)} L.32 1 M.68 ${f(1-u)} L.68 1 M0 1 L1 1`;
+ case 'ㅜ':return `M0 0 L1 0 M.5 0 L.5 ${f(u)}`;case 'ㅠ':return `M0 0 L1 0 M.32 0 L.32 ${f(u)} M.68 0 L.68 ${f(u)}`;case 'ㅡ':return 'M0 .5 L1 .5'}}
 const STEM={'ㅏ':.3,'ㅑ':.3,'ㅓ':.7,'ㅕ':.7,'ㅣ':.5,'ㅐ':.22,'ㅒ':.22,'ㅔ':.46,'ㅖ':.46};
 const VW={'ㅣ':.17,'ㅏ':.3,'ㅑ':.3,'ㅓ':.32,'ㅕ':.32,'ㅐ':.4,'ㅒ':.4,'ㅔ':.42,'ㅖ':.42};
 
@@ -217,7 +236,7 @@ function hs(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(
 function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 
 // ---- 경로 해석: 세그먼트 목록 ----
-function parse(path){const tk=path.match(/[MLQOZAD]|-?[\d.]+/g)||[];let i=0;const num=()=>+tk[i++];const subs=[];let cur=null,pos=[0,0];
+function parse(path){const tk=path.match(/[MLQOZADE]|-?[\d.]+/g)||[];let i=0;const num=()=>+tk[i++];const subs=[];let cur=null,pos=[0,0];
  while(i<tk.length){const c=tk[i++];
   if(c==='M'){pos=[num(),num()];cur={segs:[],start:pos,closed:false};subs.push(cur)}
   else if(c==='L'){const p=[num(),num()];cur.segs.push({t:'L',a:pos,b:p});pos=p}
@@ -225,6 +244,7 @@ function parse(path){const tk=path.match(/[MLQOZAD]|-?[\d.]+/g)||[];let i=0;cons
   else if(c==='Z'){cur.closed=true;if(pos[0]!==cur.start[0]||pos[1]!==cur.start[1]){cur.segs.push({t:'L',a:pos,b:cur.start});pos=cur.start}}
   else if(c==='O'){subs.push({ell:[num(),num(),num(),num()]});cur=null}
   else if(c==='D'){subs.push({dot:[num(),num()]});cur=null}
+  else if(c==='E'){subs.push({dot:[num(),num()],big:1});cur=null}
   else if(c==='A'){const cx=num(),cy=num(),rx=num(),ry=num(),a0=num(),a1=num();const pts=[];const n=Math.max(6,Math.ceil(Math.abs(a1-a0)/12));for(let k=0;k<=n;k++){const a=(a0+(a1-a0)*k/n)*Math.PI/180;pts.push([cx+rx*Math.cos(a),cy+ry*Math.sin(a)])}
    if(cur&&cur.segs.length===0&&cur.start){}
    if(!cur){cur={segs:[],start:pts[0],closed:false};subs.push(cur);pos=pts[0]}else{cur.segs.push({t:'L',a:pos,b:pts[0]});pos=pts[0]}
@@ -235,7 +255,7 @@ function parse(path){const tk=path.match(/[MLQOZAD]|-?[\d.]+/g)||[];let i=0;cons
 function shape(subs,map,P,key){const R=rng(hs(key+'|'+P.seed)),out=[];const jit=P.wobble*16,bend=P.curve,rc=P.corner*110;
  const J=p=>{if(!jit)return p;const r=rng(hs(Math.round(p[0])+','+Math.round(p[1])+'|'+key+P.seed));return[p[0]+(r()-.5)*2*jit,p[1]+(r()-.5)*2*jit]};
  for(const s of subs){
-  if(s.dot){out.push({dot:map(s.dot)});continue}
+  if(s.dot){out.push({dot:map(s.dot),big:s.big});continue}
   if(s.ell){const [cx,cy,rx,ry]=s.ell;const c=map([cx,cy]),ex=map([cx+rx,cy]),ey=map([cx,cy+ry]);let ax=Math.hypot(ex[0]-c[0],ex[1]-c[1]),ay=Math.hypot(ey[0]-c[0],ey[1]-c[1]);
    if(s.ell.lat!==1){const m=Math.min(ax,ay),rd=P.oRound;ax=ax*(1-rd)+m*rd;ay=ay*(1-rd)+m*rd}
    const n=40,pts=[],cc=J(c),ph=R()*6.28,ph2=R()*6.28,am=P.wobble*.07+P.curve*.03;for(let k=0;k<n;k++){const a=k/n*Math.PI*2,f=1+am*Math.sin(2*a+ph)+am*.5*Math.sin(3*a+ph2);pts.push([cc[0]+ax*f*Math.cos(a),cc[1]+ay*f*Math.sin(a)])}out.push({pts,closed:true});continue}
@@ -247,7 +267,7 @@ function shape(subs,map,P,key){const R=rng(hs(key+'|'+P.seed)),out=[];const jit=
    const S2=segs.map(g=>({...g,a:g.a.slice(),b:g.b.slice()}));corners.forEach(k=>{const A=S2[k.i],B=S2[(k.i+1)%n];A.b=[k.v[0]-k.d1[0]*k.r,k.v[1]-k.d1[1]*k.r];B.a=[k.v[0]+k.d2[0]*k.r,k.v[1]+k.d2[1]*k.r];A.after={t:'Q',a:A.b,c:k.v,b:B.a}});
    S2.forEach(g=>{res.push(g);if(g.after)res.push(g.after)});segs=res}
   // 휘기
-  if(bend>0)segs=segs.map(g=>{if(g.t!=='L')return g;const dx=g.b[0]-g.a[0],dy=g.b[1]-g.a[1],l=Math.hypot(dx,dy);if(l<60)return g;const o=(R()*2-1)*bend*l*.09;return{t:'Q',a:g.a,b:g.b,c:[(g.a[0]+g.b[0])/2-dy/l*o,(g.a[1]+g.b[1])/2+dx/l*o]}});
+  const sag=P.sag||0;if(bend>0||sag)segs=segs.map(g=>{if(g.t!=='L')return g;const dx=g.b[0]-g.a[0],dy=g.b[1]-g.a[1],l=Math.hypot(dx,dy);if(l<60)return g;let o=(R()*2-1)*bend*l*.09;if(Math.abs(dy)<Math.abs(dx)*.3)o+=sag*l*.075*Math.sign(dx);if(!o)return g;return{t:'Q',a:g.a,b:g.b,c:[(g.a[0]+g.b[0])/2-dy/l*o,(g.a[1]+g.b[1])/2+dx/l*o]}});
   // 점으로
   const pts=[J(segs[0].a)];for(const g of segs){if(g.t==='Q'){const l=Math.hypot(g.b[0]-g.a[0],g.b[1]-g.a[1]);const n=Math.max(3,Math.min(14,Math.ceil(l/30)));const a=J(g.a),c=J(g.c),b=J(g.b);for(let k=1;k<=n;k++){const t=k/n,u=1-t;pts.push([u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]])}}else pts.push(J(g.b))}
   if(s.closed){const f=pts[0],l=pts[pts.length-1];if(Math.hypot(f[0]-l[0],f[1]-l[1])<1)pts.pop()}
@@ -256,18 +276,19 @@ function shape(subs,map,P,key){const R=rng(hs(key+'|'+P.seed)),out=[];const jit=
 
 // ---- 한글 배치 ----
 function boxMap(b){return p=>[b.x0+p[0]*(b.x1-b.x0),b.y0+p[1]*(b.y1-b.y0)]}
+function flat(r,b,out){if(typeof r==='string'){out.push({p:r,b});return out}r.forEach(x=>{const sb=x.b,nb={x0:b.x0+sb[0]*(b.x1-b.x0),y0:b.y0+sb[1]*(b.y1-b.y0),x1:b.x0+sb[2]*(b.x1-b.x0),y1:b.y0+sb[3]*(b.y1-b.y0)};flat(x.p,nb,out)});return out}
 function conStrokes(J,kind,b,P,key){const d=DBL[J];if(d){const g=Math.max(P.w*.9,(b.x1-b.x0)*.08),mid=(b.x0+b.x1)/2;const L={...b,x1:mid-g/2},Rb={...b,x0:mid+g/2};
   return[...conStrokes(d[0],kind==='v'?'h':kind,L,P,key+'a'),...conStrokes(d[1],kind,Rb,P,key+'b')]}
- return shape(parse(CON[J](kind)),boxMap(b),P,key+J+kind)}
-function vowStrokes(V,b,P,key){return shape(parse(VOW[V]),boxMap(b),P,key+V)}
+ const G=P.G;return flat(CON[J](kind,G),b,[]).flatMap(o=>shape(parse(o.p),boxMap(o.b),P,key+J+kind))}
+function vowStrokes(V,b,P,key){return shape(parse(vowPath(V,P)),boxMap(b),P,key+V)}
 
 function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%28;const C=CHO[ci],V=JUNG[vi],T=JONG[ti];
  const A=P.adv,h=P.w/2,m=A*(1-P.size)/2+h+A*.045,top=P.top-h-(1-P.size)*400,bot=P.bot+h+(1-P.size)*400;
- let W=A-2*m,H=top-bot;const g=Math.max(P.w*1.05+18,46)*P.gap;
+ let W=A-2*m,H=(top-bot)*P.vh;const top0=top-((top-bot)-H)/2,H0=H;const g=Math.max(P.w*1.05+18,46)*P.gap;
  const typ=VV.includes(V)?'v':HV.includes(V)?'h':'m';
  if(!T)H*=1-.2*P.frame*(typ==='h'?.6:1);
- const jT=H*P.jr;const S=[];const key='';
- if(typ==='v'){const vw=Math.max(W*VW[V],P.w*2.2);const cx1=W-vw-g;
+ const jT=H*P.jr,yo=(H0-H)*P.fa;const S=[];const key='';
+ if(typ==='v'){const vw=Math.max(W*VW[V]*P.vwF,P.w*2.2);const cx1=W-vw-g;
   if(!T){S.push(...conStrokes(C,'v',{x0:0,x1:cx1,y0:H*.1,y1:H*.9},P,'c'));S.push(...vowStrokes(V,{x0:W-vw,x1:W,y0:0,y1:H},P,'v'))}
   else{S.push(...conStrokes(C,'v',{x0:0,x1:cx1,y0:H*.03,y1:jT-g*.9},P,'c'));S.push(...vowStrokes(V,{x0:W-vw,x1:W,y0:0,y1:jT-g*.35},P,'v'));
    S.push(...conStrokes(T,'j',{x0:W*.1,x1:W*.9,y0:jT+g*.25,y1:H},P,'t'))}}
@@ -277,7 +298,7 @@ function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%
   else{const cb=H*.31,jt=Math.max(jT,cb+g*2.6);S.push(...conStrokes(C,'h',{x0:W*.12,x1:W*.88,y0:0,y1:cb},P,'c'));
    const hb={y0:cb+g*.9,y1:jt-g*.75};if(V==='ㅡ'){hb.y0=hb.y1=(cb+jt)/2}S.push(...vowStrokes(V,{x0:0,x1:W,...hb},P,'v'));
    S.push(...conStrokes(T,'j',{x0:W*.1,x1:W*.9,y0:jt+g*.2,y1:H},P,'t'))}}
- else{const hv=MV[V][0],vv=MV[V][1];const vw=Math.max(W*VW[vv],P.w*2.2),vx0=W-vw,stemX=vx0+STEM[vv]*vw;const lo=hv==='ㅗ',up=hv==='ㅜ';
+ else{const hv=MV[V][0],vv=MV[V][1];const vw=Math.max(W*VW[vv]*P.vwF,P.w*2.2),vx0=W-vw,stemX=vx0+STEM[vv]*vw;const lo=hv==='ㅗ',up=hv==='ㅜ';
   const hx1=Math.max(W*.45,stemX-g*.75);
   if(!T){const cb=H*(lo?.47:up?.44:.52);S.push(...conStrokes(C,'h',{x0:0,x1:vx0-g*.6,y0:0,y1:cb},P,'c'));
    const hb={y0:cb+g,y1:lo?H*.8:H*.96};if(hv==='ㅡ'){hb.y0=hb.y1=Math.min(H*.8,cb+g+H*.12)}S.push(...vowStrokes(hv,{x0:0,x1:hx1,...hb},P,'h'));
@@ -285,14 +306,15 @@ function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%
   else{const cb=H*.3,jt=Math.max(jT,cb+g*2.6);S.push(...conStrokes(C,'h',{x0:0,x1:vx0-g*.6,y0:0,y1:cb},P,'c'));
    const hb={y0:cb+g*.9,y1:jt-g*.75};if(hv==='ㅡ'){hb.y0=hb.y1=(cb+jt)/2}S.push(...vowStrokes(hv,{x0:0,x1:hx1,...hb},P,'h'));
    S.push(...vowStrokes(vv,{x0:vx0,x1:W,y0:0,y1:jt-g*.35},P,'v'));S.push(...conStrokes(T,'j',{x0:W*.1,x1:W*.9,y0:jt+g*.2,y1:H},P,'t'))}}
- // 몸통 좌표 → 글자 좌표(y 위)
- return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],top-s.dot[1]]}:{pts:s.pts.map(p=>[m+p[0],top-p[1]]),closed:s.closed}),adv:A}}
+ // 몸통 좌표 → 글자 좌표(y 위), 가로획 오르기
+ const rs=P.rise,Y=p=>top0-(p[1]+yo-rs*(p[0]-W/2));
+ return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],Y(s.dot)],big:s.big}:{pts:s.pts.map(p=>[m+p[0],Y(p)]),closed:s.closed}),adv:A}}
 
 function jamoAlone(J,P){const A=P.adv,h=P.w/2,m=A*.18+h,top=P.top-h-80,bot=P.bot+h+120,W=A-2*m,H=top-bot;let S;
- if(VOW[J]){const vert=VV.includes(J);S=vowStrokes(J,vert?{x0:W*.2,x1:W*.8,y0:0,y1:H}:{x0:0,x1:W,y0:J==='ㅡ'?H*.5:H*.25,y1:J==='ㅡ'?H*.5:H*.75},P,'v')}
+ if(VSET.includes(J)){const vert=VV.includes(J);S=vowStrokes(J,vert?{x0:W*.2,x1:W*.8,y0:0,y1:H}:{x0:0,x1:W,y0:J==='ㅡ'?H*.5:H*.25,y1:J==='ㅡ'?H*.5:H*.75},P,'v')}
  else if(MV[J]){const [a,b]=MV[J];S=[...vowStrokes(a,{x0:0,x1:W*.6,y0:H*.35,y1:H*.75},P,'h'),...vowStrokes(b,{x0:W*.62,x1:W,y0:0,y1:H},P,'v')]}
  else S=conStrokes(J,'h',{x0:0,x1:W,y0:H*.1,y1:H*.9},P,'c');
- return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],top-s.dot[1]]}:{pts:s.pts.map(p=>[m+p[0],top-p[1]]),closed:s.closed}),adv:A}}
+ return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],top-s.dot[1]],big:s.big}:{pts:s.pts.map(p=>[m+p[0],top-p[1]]),closed:s.closed}),adv:A}}
 
 function latin(ch,P){const L=LAT[ch];if(!L)return null;const sc=P.lat,sw=L[0]*sc*P.latW,sb=P.w/2+38*P.size+P.w*.25;
  const subs=parse(L[1]);subs.forEach(s=>{if(s.ell)s.ell.lat=1});
@@ -329,7 +351,7 @@ function stroke(pts,P,closed){const n=pts.length;if(n<2)return[];const H=widths(
  c.push(...R.reverse());const p0=pts[0],h0=H[0];
  if(sq){c.push([p0[0]-n0[0]*h0-d0[0]*h0,p0[1]-n0[1]*h0-d0[1]*h0],[p0[0]+n0[0]*h0-d0[0]*h0,p0[1]+n0[1]*h0-d0[1]*h0])}else{const a0=Math.atan2(-n0[1],-n0[0]);const t=[];arc(p0,h0,a0,a0-Math.PI,t);c.push(...t.slice(1,-1))}
  if(area(c)>0)c.reverse();return[c]}
-function dot(p,P){const r=P.w/2*1.12,c=[];if(P.pen==='square'){c.push([p[0]-r,p[1]-r],[p[0]-r,p[1]+r],[p[0]+r,p[1]+r],[p[0]+r,p[1]-r]);return[c]}for(let k=0;k<16;k++){const a=-k/16*Math.PI*2;c.push([p[0]+r*Math.cos(a),p[1]+r*Math.sin(a)])}return[c]}
+function dot(p,P,big){const r=P.w/2*(big?1.55:1.12),c=[];if(P.pen==='square'){c.push([p[0]-r,p[1]-r],[p[0]-r,p[1]+r],[p[0]+r,p[1]+r],[p[0]+r,p[1]-r]);return[c]}for(let k=0;k<16;k++){const a=-k/16*Math.PI*2;c.push([p[0]+r*Math.cos(a),p[1]+r*Math.sin(a)])}return[c]}
 
 // 픽셀 펜
 function pixel(G,P){const cs=P.cell,t=P.pxT;const set=new Set();const mark=(x,y)=>{const i=Math.floor(x/cs),j=Math.floor(y/cs);for(let a=0;a<t;a++)for(let b=0;b<t;b++)set.add((i+a)+','+(j-b))};
@@ -350,12 +372,13 @@ function splitSharp(p){const out=[];let cur=[p[0]];for(let i=1;i<p.length;i++){c
 // ---- 글자 하나 ----
 function build(ch,P){const cp=ch.codePointAt(0);let G=null;
  if(cp>=0xAC00&&cp<=0xD7A3)G=hangul(cp,P);
- else if(cp>=0x3131&&cp<=0x3163){const J=String.fromCodePoint(cp);if(CON[J]||VOW[J]||DBL[J]||MV[J])G=jamoAlone(J,P)}
+ else if(cp>=0x3131&&cp<=0x3163){const J=String.fromCodePoint(cp);if(CON[J]||VSET.includes(J)||DBL[J]||MV[J])G=jamoAlone(J,P)}
  else G=latin(ch,P);
  if(!G)return ch===' '?{cs:[],adv:Math.round(P.adv*.3)}:ch==='　'?{cs:[],adv:P.adv}:null;
  let cs=[];
  if(P.pen==='pixel')cs=pixel(G,P);
- else for(const s of G.strokes){if(s.dot)cs.push(...dot(s.dot,P));else if(G.fl&&s.closed){const c=s.pts.slice();if(area(c)>0)c.reverse();cs.push(c)}else if(s.closed)cs.push(...stroke(s.pts,P,true));else splitSharp(s.pts).forEach(q=>cs.push(...stroke(q,P,false)))}
+ else for(const s of G.strokes){if(s.dot)cs.push(...dot(s.dot,P,s.big));else if(G.fl&&s.closed){const c=s.pts.slice();if(area(c)>0)c.reverse();cs.push(c)}else if(s.closed)cs.push(...stroke(s.pts,P,true));else{splitSharp(s.pts).forEach(q=>cs.push(...stroke(q,P,false)));if(P.blob>0&&P.pen!=='square'){const r=P.w/2*(1+P.blob*.75);[s.pts[0],s.pts[s.pts.length-1]].forEach(e=>{const c=[];for(let k=0;k<18;k++){const a=-k/18*Math.PI*2;c.push([e[0]+r*Math.cos(a),e[1]+r*Math.sin(a)])}cs.push(c)})}}}
+ if(P.prop>0&&cs.length&&cp!==32){let x0=1e9,x1=-1e9;cs.forEach(c=>c.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0])}));const sb=45+P.w*.25,na=(x1-x0)+2*sb,nx=sb-x0;const k=P.prop;const dx=nx*k+(0)*(1-k);G={...G,adv:Math.round(G.adv*(1-k)+na*k)};cs=cs.map(c=>c.map(p=>[p[0]+dx,p[1]]))}
  // 기울기·통통 튀기
  const r=rng(hs('b'+cp+'|'+P.seed));const by=P.bounce?(r()-.5)*2*P.bounce*45:0,rot=P.bounce?(r()-.5)*P.bounce*.06:0,sl=P.slant,cx=G.adv/2,cy=380;
  cs=cs.map(c=>{const q=c.map(p=>{let x=p[0]-cx,y=p[1]-cy;const x2=x*Math.cos(rot)-y*Math.sin(rot),y2=x*Math.sin(rot)+y*Math.cos(rot);x=x2+cx+(y2+cy)*sl;y=y2+cy+by;return[Math.round(x),Math.round(y)]});
@@ -363,12 +386,12 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
  return{cs,adv:G.adv+P.track}}
 
 // ---- 기본값 ----
-const DEF={w:70,pen:'round',contrast:0,adv:960,size:.94,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.95,latW:1,track:0,cell:62.5,pxT:1};
-function norm(p){const P={...DEF,...p};if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
+const DEF={prop:0,blob:0,rise:0,sag:0,bl:1,bp:.47,vs:0,stub:1,vwF:1,vh:1,fa:0,w:70,pen:'round',contrast:0,adv:960,size:.94,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.95,latW:1,track:0,cell:62.5,pxT:1};
+function norm(p){const P={...DEF,...p};P.G={...G0,...(p.g||{})};if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
 // 미리 계산된 키
 function glyph(ch,p){return build(ch,norm(p))}
 const ALL=()=>{const a=[];for(let c=0xAC00;c<=0xD7A3;c++)a.push(c);for(let c=0x3131;c<=0x3163;c++)a.push(c);Object.keys(LAT).forEach(k=>a.push(k.codePointAt(0)));a.push(32,0x3000);return a};
-return{glyph,norm,ALL,DEF,LAT,CHO,JUNG,JONG,hs,rng}})();
+return{glyph,norm,ALL,DEF,GENES,G0,LAT,CHO,JUNG,JONG,hs,rng}})();
 
 
 // ===== TTF 만들기 =====
@@ -424,33 +447,52 @@ return{make}})();
 
 (()=>{
 const $=id=>document.getElementById(id);
-const SK='font-garden-v1';
+const SK='font-garden-v1';const VER=2;
 let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 꾸불 무료 폰트',sampleB:'아니요, 아직 못 먹었습니다.',pvBg:'paper',pvSize:26,nameN:0};
-try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]}}catch(e){}
+try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]};if((ST.ver||1)<VER){ST.hist=[];ST.gen=[];ST.ver=VER}}catch(e){}
 let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SK,JSON.stringify({...ST,hist:ST.hist.slice(-4)}))}catch(e){}},250)};
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)};
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
 
 // ---- 범위와 분위기 ----
-const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[800,1100],size:[.8,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.8,1.1],latW:[.8,1.2],track:[-60,120],grid:[10,24],pxT:[1,2]};
+const B={rise:[-.02,.14],sag:[-.6,.8],bl:[.55,1.2],bp:[.36,.56],vs:[0,1],stub:[.45,1],vwF:[.8,1.35],vh:[.8,1.05],fa:[0,1],prop:[0,1],blob:[0,1],w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[800,1100],size:[.8,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.8,1.1],latW:[.8,1.2],track:[-60,120],grid:[10,24],pxT:[1,2]};
 const INT={grid:1,pxT:1,adv:1,track:1,w:1};
+const GA=GE.GENES;
 const MOODS={
  all:{label:'✨ 전체'},
- cute:{label:'🍡 동글동글',pens:['round'],w:[70,108],corner:[.4,1],curve:[.15,.5],wobble:[0,.25],frame:[.4,1],oRound:[.8,1],gap:[1,1.2],size:[.88,.97],bounce:[0,.35],contrast:[0,0],adv:[930,1030],slant:[0,0],jr:[.56,.64]},
- neat:{label:'📏 단정한',pens:['round','square','square'],w:[45,85],corner:[0,.25],curve:[0,0],wobble:[0,0],frame:[0,.3],oRound:[.4,.9],gap:[.95,1.15],size:[.9,.98],bounce:[0,0],contrast:[0,.35],adv:[900,1000],slant:[0,0],jr:[.56,.64]},
- hand:{label:'✍️ 손글씨',pens:['round','round','brush'],w:[45,85],corner:[.1,.7],curve:[.35,1],wobble:[.3,.85],frame:[.5,1],oRound:[.5,1],gap:[1,1.25],size:[.86,.96],bounce:[.2,.7],contrast:[0,.2],adv:[880,1020],slant:[0,.08],jr:[.55,.66]},
- bold:{label:'🔤 굵은 제목',pens:['round','square'],w:[100,120],corner:[.1,.6],curve:[0,.3],wobble:[0,.2],frame:[0,.6],oRound:[.6,1],gap:[1.1,1.3],size:[.92,1],bounce:[0,.2],contrast:[0,.2],adv:[960,1060],slant:[0,.04],jr:[.56,.62]},
- brush:{label:'🖌 붓펜',pens:['brush'],w:[65,108],corner:[0,.5],curve:[.25,.7],wobble:[.15,.5],frame:[.3,1],oRound:[.5,.9],gap:[1,1.2],size:[.88,.97],bounce:[.1,.5],contrast:[.15,.5],adv:[900,1020],slant:[.02,.12],jr:[.55,.64]},
- pixel:{label:'👾 픽셀',pens:['pixel'],grid:[11,20],pxT:[1,2],w:[60,60],corner:[0,0],curve:[0,.3],wobble:[0,0],frame:[0,1],oRound:[.6,1],gap:[1,1.2],size:[.9,1],bounce:[0,.3],contrast:[0,0],adv:[900,1000],slant:[0,0],jr:[.56,.64]},
+ cute:{label:'🍡 동글동글',pens:['round'],w:[70,108],corner:[.4,1],curve:[.1,.45],wobble:[0,.2],frame:[.4,1],oRound:[.8,1],gap:[1,1.2],size:[.88,.97],bounce:[0,.35],contrast:[0,0],adv:[930,1030],slant:[0,0],jr:[.56,.64],
+  rise:[0,.03],sag:[0,.6],bl:[.6,.95],bp:[.42,.52],vs:[.3,.9],stub:[.5,.8],vwF:[.8,1.05],vh:[.88,1],fa:[0,1],prop:[0,.6],blob:[0,.5],
+  g:{k:['sweep','hook'],n:['round','up'],d:['round'],r:['round'],m:['round'],b:['round'],s:['tent','fork'],j:['top','z'],o:['small','free','egg'],t:['dot','h'],p:['std','slant'],v:['line','dot','short']}},
+ neat:{label:'📏 단정한',pens:['round','square','square'],w:[45,85],corner:[0,.25],curve:[0,0],wobble:[0,0],frame:[0,.3],oRound:[.4,.9],gap:[.95,1.15],size:[.9,.98],bounce:[0,0],contrast:[0,.35],adv:[900,1000],slant:[0,0],jr:[.56,.64],
+  rise:[0,0],sag:[0,0],bl:[.9,1.1],bp:[.44,.5],vs:[0,.2],stub:[.85,1],vwF:[.95,1.15],vh:[.92,1.02],fa:[0,0],prop:[0,.3],blob:[0,0],
+  g:{k:['sq','sweep'],n:['flat'],d:['sq'],r:['sq'],m:['sq'],b:['std'],s:['fork','angle'],j:['top'],o:['free','rsq'],t:['v','h'],p:['std'],v:['line']}},
+ hand:{label:'✍️ 손글씨',pens:['round','round','brush'],w:[45,85],corner:[.1,.7],curve:[.3,.9],wobble:[.25,.8],frame:[.5,1],oRound:[.5,1],gap:[1,1.25],size:[.86,.96],bounce:[.2,.7],contrast:[0,.2],adv:[880,1020],slant:[0,.08],jr:[.55,.66],
+  rise:[.03,.13],sag:[-.3,.4],bl:[.7,1.15],bp:[.38,.52],vs:[0,.6],stub:[.6,1],vwF:[.85,1.2],vh:[.85,1.02],fa:[0,1],prop:[.4,1],blob:[0,.3],
+  g:{k:['hook','diag','sweep'],n:['up','round'],d:['hand','round'],r:['hand','round'],m:['trap','round'],b:['splay','round'],s:['hand','fork','tent'],j:['z','top'],o:['free','egg'],t:['slant','dot','h'],p:['hand','slant'],v:['line','short']}},
+ bold:{label:'🔤 굵은 제목',pens:['round','square'],w:[100,120],corner:[.1,.6],curve:[0,.3],wobble:[0,.2],frame:[0,.6],oRound:[.6,1],gap:[1.1,1.3],size:[.92,1],bounce:[0,.2],contrast:[0,.2],adv:[960,1060],slant:[0,.04],jr:[.56,.62],
+  rise:[0,.03],sag:[0,.2],bl:[.8,1.1],bp:[.42,.5],vs:[0,.4],stub:[.7,1],vwF:[1,1.25],vh:[.84,.96],fa:[0,1],prop:[0,.4],blob:[0,0],
+  g:{k:['sq','sweep'],n:['flat','round'],d:['sq','round'],r:['sq','round'],m:['sq','round'],b:['std','round'],s:['fork','tent','angle'],j:['top','z'],o:['free','rsq','small'],t:['h','v','dot'],p:['std','slant'],v:['line','short']}},
+ brush:{label:'🖌 붓펜',pens:['brush'],w:[65,108],corner:[0,.5],curve:[.25,.7],wobble:[.15,.5],frame:[.3,1],oRound:[.5,.9],gap:[1,1.2],size:[.88,.97],bounce:[.1,.5],contrast:[.15,.5],adv:[900,1020],slant:[.02,.12],jr:[.55,.64],
+  rise:[.02,.1],sag:[-.2,.3],bl:[.75,1.15],bp:[.4,.52],vs:[0,.4],stub:[.7,1],vwF:[.9,1.2],vh:[.86,1],fa:[0,1],prop:[.3,1],blob:[0,0],
+  g:{k:['sweep','hook','diag'],n:['up','round','flat'],d:['hand','sq','round'],r:['hand','sq'],m:['trap','sq'],b:['splay','std'],s:['fork','hand'],j:['top','z'],o:['free','egg'],t:['slant','v','dot'],p:['hand','slant','std'],v:['line']}},
+ retro:{label:'🫧 방울펜',pens:['round'],w:[38,62],corner:[.2,.9],curve:[0,.3],wobble:[0,.2],frame:[.2,1],oRound:[.7,1],gap:[1,1.25],size:[.88,.97],bounce:[0,.3],contrast:[0,0],adv:[920,1020],slant:[0,.05],jr:[.56,.64],
+  rise:[0,.06],sag:[-.2,.4],bl:[.7,1.05],bp:[.42,.52],vs:[0,.6],stub:[.6,1],vwF:[.85,1.15],vh:[.85,1],fa:[0,1],prop:[.4,1],blob:[.55,1],
+  g:{k:['sq','sweep','hook','diag'],n:['flat','up','round'],d:['sq','round'],r:['sq','round'],m:['sq','round','trap'],b:['std','round','splay'],s:['fork','tent','angle'],j:['top','z'],o:['free','small','rsq'],t:['v','h','dot'],p:['std','slant'],v:['line','short']}},
+ kid:{label:'🧸 꼬마',pens:['round'],w:[85,115],corner:[.5,1],curve:[.2,.6],wobble:[.1,.4],frame:[.7,1],oRound:[.9,1],gap:[1.05,1.3],size:[.86,.95],bounce:[.3,.8],contrast:[0,0],adv:[950,1050],slant:[-.03,.03],jr:[.56,.62],
+  rise:[-.02,.05],sag:[.2,.8],bl:[.55,.75],bp:[.44,.52],vs:[.6,1],stub:[.45,.65],vwF:[.8,.95],vh:[.86,.98],fa:[.5,1],prop:[.5,1],blob:[0,.3],
+  g:{k:['hook','sweep'],n:['round'],d:['round'],r:['round'],m:['round'],b:['round'],s:['tent'],j:['z','top'],o:['small','free'],t:['dot'],p:['slant','std'],v:['dot','short']}},
+ pixel:{label:'👾 픽셀',pens:['pixel'],grid:[11,20],pxT:[1,2],w:[60,60],corner:[0,0],curve:[0,.2],wobble:[0,0],frame:[0,1],oRound:[.6,1],gap:[1,1.2],size:[.9,1],bounce:[0,.3],contrast:[0,0],adv:[900,1000],slant:[0,0],jr:[.56,.64],
+  rise:[0,.06],sag:[0,0],bl:[.7,1.1],bp:[.42,.5],vs:[0,.6],stub:[.6,1],vwF:[.9,1.2],vh:[.88,1],fa:[0,1],prop:[0,.6],blob:[0,0],
+  g:{k:['sq','diag'],n:['flat','up'],d:['sq'],r:['sq'],m:['sq','trap'],b:['std','splay'],s:['angle','fork','tent'],j:['top','z'],o:['free','rsq','small'],t:['v','h'],p:['std','slant'],v:['line','short','dot']}},
 };
 const MK=Object.keys(MOODS).filter(k=>k!=='all');
 const N1=['몽글','포근','새벽','달빛','말랑','보들','콩닥','산들','소복','햇살','단정','또렷','살랑','도란','꼬물','뭉게','반짝','토닥','사각','오롯','나긋','봄볕','여름','가을','눈송','바삭','폭신','찰랑','방울','초롱'],
  N2=['구름','별','솜','하루','편지','노트','정원','바람','꽃잎','쪽지','일기','마음','새싹','달','이슬','풀잎','물결','연필','모래','쿠키','젤리','곰','토끼','고래'];
 const newName=()=>pk(N1)+' '+pk(N2)+'체';
-function rnd(mood){const m=MOODS[mood==='all'?pk(MK):mood];const p={pen:pk(m.pens),seed:Math.floor(R()*1e9)};for(const k of Object.keys(B)){const r=m[k]||(k==='lat'?[.9,1]:k==='latW'?[.92,1.05]:k==='track'?[0,30]:null);if(!r)continue;p[k]=rr(r[0],r[1]);if(INT[k])p[k]=Math.round(p[k])}return{id:uid(),name:newName(),mood:m.label,p}}
+function rnd(mood){const m=MOODS[mood==='all'?pk(MK):mood];const p={pen:pk(m.pens),seed:Math.floor(R()*1e9),g:{}};for(const k of Object.keys(GA))p.g[k]=pk(mood==='all'&&R()<.25?GA[k]:(m.g[k]||GA[k]));for(const k of Object.keys(B)){const r=m[k]||(k==='lat'?[.9,1]:k==='latW'?[.92,1.05]:k==='track'?[0,30]:null);if(!r)continue;p[k]=rr(r[0],r[1]);if(INT[k])p[k]=Math.round(p[k])}return{id:uid(),name:newName(),mood:m.label,p}}
 const clamp=(k,v)=>{const b=B[k];if(!b)return v;v=Math.max(b[0],Math.min(b[1],v));return INT[k]?Math.round(v):Math.round(v*1000)/1000};
-function mutate(f,amt=.12){const p={...f.p};for(const k of Object.keys(B)){if(p[k]===undefined)continue;const b=B[k];p[k]=clamp(k,p[k]+(R()+R()+R()-1.5)*(b[1]-b[0])*amt)}if(R()<.5)p.seed=Math.floor(R()*1e9);if(p.pen!=='pixel'&&R()<.08)p.pen=pk(['round','square','brush']);return{id:uid(),name:newName(),mood:'🌱 '+f.name+' 닮은',p}}
-function breed(a,b){const p={pen:R()<.5?a.p.pen:b.p.pen,seed:Math.floor(R()*1e9)};for(const k of Object.keys(B)){const x=a.p[k],y=b.p[k];if(x===undefined&&y===undefined)continue;const u=x??y,v=y??x;const t=R();p[k]=clamp(k,(t<.35?u:t<.7?v:u+(v-u)*R())+(R()-.5)*(B[k][1]-B[k][0])*.06)}return{id:uid(),name:newName(),mood:'🧬 '+a.name+' × '+b.name,p}}
+function mutate(f,amt=.12){const p={...f.p};for(const k of Object.keys(B)){if(p[k]===undefined)continue;const b=B[k];p[k]=clamp(k,p[k]+(R()+R()+R()-1.5)*(b[1]-b[0])*amt)}if(R()<.5)p.seed=Math.floor(R()*1e9);if(p.pen!=='pixel'&&R()<.08)p.pen=pk(['round','square','brush']);p.g={...(f.p.g||{})};const ng=R()<.5?1:R()<.6?2:0;for(let i=0;i<ng;i++){const k=pk(Object.keys(GA));p.g[k]=pk(GA[k])}return{id:uid(),name:newName(),mood:'🌱 '+f.name+' 닮은',p}}
+function breed(a,b){const p={pen:R()<.5?a.p.pen:b.p.pen,seed:Math.floor(R()*1e9),g:{}};for(const k of Object.keys(GA))p.g[k]=R()<.5?(a.p.g||{})[k]||GE.G0[k]:(b.p.g||{})[k]||GE.G0[k];for(const k of Object.keys(B)){const x=a.p[k],y=b.p[k];if(x===undefined&&y===undefined)continue;const u=x??y,v=y??x;const t=R();p[k]=clamp(k,(t<.35?u:t<.7?v:u+(v-u)*R())+(R()-.5)*(B[k][1]-B[k][0])*.06)}return{id:uid(),name:newName(),mood:'🧬 '+a.name+' × '+b.name,p}}
 
 // ---- 글자 그리기 ----
 const GC=new Map();
@@ -496,7 +538,8 @@ function renderKeep(){const g=$('keepGrid');if(!ST.keep.length){g.innerHTML='<di
 const SL={edSl1:[['w','굵기',30,125,1,v=>v],['contrast','가로획 가늘게',0,.8,.01,v=>Math.round(v*100)+'%'],['grid','픽셀 칸 수',10,24,1,v=>v+'칸'],['pxT','픽셀 굵기',1,2,1,v=>v+'칸']],
  edSl2:[['corner','모서리 둥글게',0,1,.01,v=>Math.round(v*100)+'%'],['curve','획 휘어짐',0,1,.01,v=>Math.round(v*100)+'%'],['wobble','손떨림',0,1,.01,v=>Math.round(v*100)+'%'],['bounce','통통 튀기',0,1,.01,v=>Math.round(v*100)+'%'],['slant','기울기',-.05,.2,.005,v=>Math.round(v*100)+'%']],
  edSl3:[['adv','글자 폭',800,1100,5,v=>v],['size','글자 크기',.8,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['track','자간',-60,120,2,v=>v]],
- edSl4:[['lat','영문 크기',.8,1.1,.01,v=>Math.round(v*100)+'%'],['latW','영문 폭',.8,1.2,.01,v=>Math.round(v*100)+'%']]};
+ edSl4:[['lat','영문 크기',.8,1.1,.01,v=>Math.round(v*100)+'%'],['latW','영문 폭',.8,1.2,.01,v=>Math.round(v*100)+'%']],
+ edSl5:[['rise','가로획 오르기',-.02,.14,.005,v=>Math.round(v*100)+'%'],['sag','가로획 휘기',-.6,.8,.02,v=>(v>0?'웃음 ':v<0?'아치 ':'')+Math.round(Math.abs(v)*100)],['vs','모음 줄기 짧게',0,1,.01,v=>Math.round(v*100)+'%'],['bl','곁줄기 길이',.55,1.2,.01,v=>Math.round(v*100)+'%'],['bp','곁줄기 높이',.36,.56,.005,v=>Math.round(v*100)],['stub','ㅗㅜ 꼭지 길이',.45,1,.01,v=>Math.round(v*100)+'%'],['vwF','모음 칸 폭',.8,1.35,.01,v=>Math.round(v*100)+'%'],['vh','글자 높이',.8,1.05,.005,v=>Math.round(v*100)+'%'],['fa','짧은 글자 정렬',0,1,.01,v=>v<.33?'위':v>.66?'아래':'가운데'],['prop','글자마다 폭 다르게',0,1,.01,v=>Math.round(v*100)+'%'],['blob','획 끝 방울',0,1,.01,v=>Math.round(v*100)+'%']]};
 Object.entries(SL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl" data-k="${k}"><label for="s_${k}">${lab}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="o_${k}"></output></div>`).join('')});
 const ALLSL=Object.values(SL).flat();let edUndo=[],edRedo=[],slT=0,dragging=false;
 function curP(){return GE.norm(ST.cur.p)}
@@ -504,25 +547,28 @@ function syncEd(){const f=ST.cur,P=GE.norm(f.p);$('edName').value=f.name;documen
  ALLSL.forEach(([k,,,,,fmt])=>{const v=f.p[k]??P[k]??(k==='grid'?16:0);$('s_'+k).value=v;$('o_'+k).textContent=fmt(+v)});
  const px=f.p.pen==='pixel';['grid','pxT'].forEach(k=>document.querySelector(`.sl[data-k="${k}"]`).classList.toggle('hide',!px));['w','contrast'].forEach(k=>document.querySelector(`.sl[data-k="${k}"]`).classList.toggle('hide',px));
  $('edUndo').disabled=!edUndo.length;$('edRedo').disabled=!edRedo.length;$('edKeep').textContent=isKept(f.id)?'♥ 보관함에 저장됨 (바뀐 것도 저장돼요)':'♡ 보관함에 넣기'}
+const GL={k:['ㄱ 꺾임','가',{sq:'직각',sweep:'곡선',diag:'사선',hook:'갈고리'}],n:['ㄴ 끝','나',{flat:'평평',up:'올림',round:'둥글게'}],d:['ㄷ·ㅌ','다',{sq:'네모',round:'둥근',hand:'손글씨'}],r:['ㄹ','라',{sq:'네모',round:'둥근',hand:'손글씨'}],m:['ㅁ','마',{sq:'네모',round:'둥근',trap:'사다리'}],b:['ㅂ','바',{std:'기본',round:'둥근',splay:'벌림'}],s:['ㅅ·ㅈ·ㅊ','사',{fork:'갈래',tent:'지붕',hand:'손글씨',angle:'꺾쇠'}],j:['ㅈ','자',{top:'뚜껑',z:'Z자'}],o:['ㅇ·ㅎ','오',{free:'동그라미',rsq:'둥근네모',small:'작은 원',egg:'달걀'}],t:['꼭지(ㅎ·ㅊ)','하',{v:'세로',h:'가로',dot:'점',slant:'비스듬'}],p:['ㅍ','파',{std:'기본',slant:'모음',hand:'손글씨'}],v:['모음 곁줄기','나',{line:'선',short:'짧게',dot:'동그란 점'}]};
+function drawGenes(){const f=ST.cur;if(!f)return;const g={...GE.G0,...(f.p.g||{})};$('edGenes').innerHTML=Object.entries(GL).map(([k,[lab,ch,names]])=>`<div class="row" style="gap:5px;margin:6px 0;flex-wrap:nowrap"><span style="font-size:13px;flex:0 0 4.6em;line-height:1.2">${lab}</span><div class="row" style="gap:5px">${GA[k].map(v=>{const p2={...f.p,g:{...g,[k]:v}};return`<button data-gk="${k}" data-gv="${v}" class="${g[k]===v?'on':''}" style="padding:3px 5px;display:flex;flex-direction:column;align-items:center;gap:0;min-width:52px;min-height:0;${g[k]===v?'background:var(--acc2);border-color:var(--acc);color:var(--acc)':''}">${svgText({p:p2},ch,{size:28,color:'#1d1d1b'})}<span style="font-size:11px">${names[v]}</span></button>`}).join('')}</div></div>`).join('');
+ $('edGenes').querySelectorAll('[data-gk]').forEach(b=>b.onclick=()=>{setP('g',{...g,[b.dataset.gk]:b.dataset.gv});drawGenes();renderGen();renderKeep()})}
 function drawEd(){const f=ST.cur;if(!f)return;const W=Math.min(620,$('edPv').clientWidth||340);$('edPv').innerHTML=svgText(f,ST.sampleA,{size:Math.max(28,Math.min(46,W/10)),maxPx:W})+'<div style="height:4px"></div>'+svgText(f,ST.sampleB,{size:18,maxPx:W,color:'#333'});
  const pkey=JSON.stringify(f.p);$('edGl').innerHTML=[...$('edGlTxt').value].filter(c=>c.trim()).slice(0,60).map(c=>`<div>${svgText(f,c,{size:36})}</div>`).join('')}
 function setP(k,v,live){const f=ST.cur;if(!dragging){edUndo.push(JSON.stringify(f.p));edRedo=[];if(edUndo.length>80)edUndo.shift()}f.p={...f.p,[k]:v};keepSync();if(live){cancelAnimationFrame(slT);slT=requestAnimationFrame(drawEd)}else drawEd();syncEd();save()}
 function keepSync(){const f=ST.cur,i=ST.keep.findIndex(x=>x.id===f.id);if(i>=0)ST.keep[i]=JSON.parse(JSON.stringify(f));const j=ST.gen.findIndex(x=>x.id===f.id);if(j>=0)ST.gen[j]=JSON.parse(JSON.stringify(f))}
 ALLSL.forEach(([k,,,,,fmt])=>{const el=$('s_'+k);el.addEventListener('pointerdown',()=>{edUndo.push(JSON.stringify(ST.cur.p));edRedo=[];dragging=true});
  el.addEventListener('input',()=>{const v=INT[k]?Math.round(+el.value):+el.value;$('o_'+k).textContent=fmt(v);setP(k,v,true)});
- el.addEventListener('change',()=>{dragging=false;renderGen();renderKeep()})});
+ el.addEventListener('change',()=>{dragging=false;renderGen();renderKeep();drawGenes()})});
 document.addEventListener('pointerup',()=>{dragging=false});
 document.querySelectorAll('[data-pen]').forEach(b=>b.onclick=()=>{setP('pen',b.dataset.pen);if(b.dataset.pen==='pixel'&&!ST.cur.p.grid){ST.cur.p.grid=16;ST.cur.p.pxT=1}syncEd();drawEd();renderGen();renderKeep()});
 $('edSeed').onclick=()=>{setP('seed',Math.floor(R()*1e9));renderGen();renderKeep()};
 $('edName').addEventListener('input',()=>{ST.cur.name=$('edName').value||'이름 없는 글씨';keepSync();save()});
 $('edName').addEventListener('change',()=>{renderGen();renderKeep();fillPvFonts()});
-$('edUndo').onclick=()=>{if(!edUndo.length)return;edRedo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edUndo.pop());keepSync();save();syncEd();drawEd();renderGen();renderKeep()};
-$('edRedo').onclick=()=>{if(!edRedo.length)return;edUndo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edRedo.pop());keepSync();save();syncEd();drawEd();renderGen();renderKeep()};
+$('edUndo').onclick=()=>{if(!edUndo.length)return;edRedo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edUndo.pop());keepSync();save();syncEd();drawEd();drawGenes();renderGen();renderKeep()};
+$('edRedo').onclick=()=>{if(!edRedo.length)return;edUndo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edRedo.pop());keepSync();save();syncEd();drawEd();drawGenes();renderGen();renderKeep()};
 $('edGlTxt').addEventListener('input',()=>{clearTimeout(slT);slT=setTimeout(drawEd,200)});
 $('edKeep').onclick=()=>{if(!isKept(ST.cur.id)){ST.keep.unshift(JSON.parse(JSON.stringify(ST.cur)));toast('보관함에 넣었어요')}else toast('보관함에 저장돼 있어요');save();syncEd();renderGen();renderKeep();fillPvFonts()};
 $('edLike').onclick=()=>{const f=ST.cur;newGen(Array.from({length:12},()=>mutate(f,.09)),`‘${f.name}’과 비슷한 글씨 12개`);go('gen')};
 function openEd(f){if(!ST.cur||ST.cur.id!==f.id){edUndo=[];edRedo=[]}ST.cur=JSON.parse(JSON.stringify(f));save();go('ed')}
-function renderEd(){const has=!!ST.cur;$('edEmpty').classList.toggle('hide',has);$('edBox').classList.toggle('hide',!has);if(has){syncEd();drawEd()}}
+function renderEd(){const has=!!ST.cur;$('edEmpty').classList.toggle('hide',has);$('edBox').classList.toggle('hide',!has);if(has){syncEd();drawEd();drawGenes()}}
 
 // ---- TTF ----
 let DL=null;(async()=>{try{if(window.claude&&claude.use)DL=await claude.use('downloads')}catch(e){DL=null}})();
