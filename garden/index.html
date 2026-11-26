@@ -95,11 +95,11 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
    <div class="sec"><h2>펜</h2><div class="seg" id="edPen"><button data-pen="round">둥근펜</button><button data-pen="square">네모펜</button><button data-pen="brush">붓펜</button><button data-pen="pixel">픽셀</button></div><div id="edSl1"></div></div>
    <div class="sec"><h2>손맛</h2><div id="edSl2"></div><button id="edSeed" style="margin-top:6px">🎲 손떨림 무늬 바꾸기</button></div>
    <div class="sec"><h2>모양과 자리</h2><div id="edSl3"></div></div>
-   <div class="sec"><h2>영문·숫자</h2><div id="edLatPv" style="background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px"></div><div id="edSl4"></div></div>
+   <div class="sec"><h2>영문·숫자</h2><div id="edLatPv" style="background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px"></div><div id="edSl4"></div><button id="edLatReset" style="margin-top:6px">↺ 영문·숫자 비율 기본값으로</button></div>
    <div class="sec"><h2>저장</h2>
     <div class="row"><button class="pri" id="edKeep" style="flex:1">♡ 보관함에 넣기</button><button id="edLike" style="flex:1">🌱 비슷하게 12개</button></div>
     <div class="row" style="margin-top:8px"><button class="pri" id="edTTF" style="flex:1;background:#1d1d1b;border-color:#1d1d1b">⬇︎ TTF 폰트 파일로 저장</button></div>
-    <div class="bar hide" id="edBar"><i></i></div><p class="mute" id="edMsg">한글 11,172자 + 낱자모 + 영문·숫자·기호가 모두 들어가요.</p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 수정 및 재배포 금지’가 함께 적혀요.</p></div>
+    <div class="bar hide" id="edBar"><i></i></div><p class="mute" id="edMsg">한글 11,172자 + 낱자모 + 영문·숫자·기호가 모두 들어가요.</p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 개인·상업적 사용 가능 · 수정 및 재배포 금지’가 함께 적혀요.</p></div>
   </div></div>
  </div>
 </section>
@@ -302,7 +302,7 @@ function jamoAlone(J,P){const A=P.adv,h=P.w/2,m=A*.18+h,top=P.top-h-80,bot=P.bot
 
 function latin(ch,P){const L=LAT[ch];if(!L)return null;const isN=ch>='0'&&ch<='9',sc=isN?P.num:P.lat,lo0=ch>='a'&&ch<='z',xw=isN?P.numW:lo0?P.lcW:P.latW,sw=L[0]*sc*xw,sb=P.w/2+28;
  const subs=parse(L[1]);subs.forEach(s=>{if(s.ell)s.ell.lat=1});
- const lo=ch>='a'&&ch<='z',xh=P.xh,fy=y=>!lo||y<=0?y:y<=500?y*xh:500*xh+(y-500)*(690-500*xh)/240;const map=p=>[sb+p[0]*sc*xw,fy(p[1])*sc];const st=shape(subs,map,P,'L'+ch);return{strokes:st,adv:Math.round(sw+2*sb),fl:L.fl}}
+ const lo=ch>='a'&&ch<='z',xh=P.xh,fy=y=>!lo||y<=0?y:y<=500?y*xh:500*xh+(y-500)*((740-(1-xh)*238)-500*xh)/240;const map=p=>[sb+p[0]*sc*xw,fy(p[1])*sc];const st=shape(subs,map,P,'L'+ch);return{strokes:st,adv:Math.round(sw+2*sb),fl:L.fl}}
 
 // ---- 펜: 뼈대 → 외곽선 ----
 const area=c=>{let a=0;for(let i=0;i<c.length;i++){const p=c[i],q=c[(i+1)%c.length];a+=p[0]*q[1]-q[0]*p[1]}return a/2};
@@ -370,7 +370,7 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
 
 // ---- 기본값 ----
 const DEF={hg:0,eg:0,w:70,pen:'round',contrast:0,adv:880,size:.885,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.87,latW:.77,xh:.79,track:0,cell:62.5,pxT:1};
-function norm(p){const P={...DEF,...p};if(p.num===undefined)P.num=Math.round(P.lat*.968*1000)/1000;if(p.lcW===undefined)P.lcW=P.latW;if(p.numW===undefined)P.numW=Math.min(1.3,Math.round(P.latW*1.17*1000)/1000);if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
+function norm(p){const P={...DEF,...p};if(p.num===undefined)P.num=Math.round(P.lat*.968*1000)/1000;if(p.lcW===undefined)P.lcW=P.latW;if(p.xh===undefined&&p.lat!==undefined)P.xh=1;if(p.numW===undefined)P.numW=Math.min(1.3,Math.round(P.latW*1.17*1000)/1000);if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
 // 미리 계산된 키
 function glyph(ch,p){return build(ch,norm(p))}
 const ALL=()=>{const a=[];for(let c=0xAC00;c<=0xD7A3;c++)a.push(c);for(let c=0x3131;c<=0x3163;c++)a.push(c);Object.keys(LAT).forEach(k=>a.push(k.codePointAt(0)));a.push(32,0x3000);return a};
@@ -410,7 +410,7 @@ function make(name,glyphs,map,opt={}){
  const os2=new W();const avg=Math.round(glyphs.reduce((s,g)=>s+g.adv,0)/ng);
  os2.u16(4);os2.i16(avg);os2.u16(opt.weight||400);os2.u16(5);os2.u16(0);[650,600,0,75,650,600,0,350,50,300].forEach(v=>os2.i16(v));os2.i16(0);for(let i=0;i<10;i++)os2.u8(0);
  os2.u32(1|1<<5);os2.u32((1<<24|1<<20|1<<14)>>>0);os2.u32(0);os2.u32(0);os2.str('NONE');os2.u16(0x40);os2.u16(0x20);os2.u16(0xFFFF);os2.i16(ASC);os2.i16(DSC);os2.i16(0);os2.u16(Math.max(ASC,gy1));os2.u16(Math.max(-DSC,-gy0));os2.u32((1<<19|1)>>>0);os2.u32(0);os2.i16(500);os2.i16(700);os2.u16(0);os2.u16(32);os2.u16(0);
- const ps=psName(name),yr=new Date().getFullYear();const CP=`Copyright (c) ${yr} 여백 (Yeobaek). All rights reserved.`,LIC='이 폰트의 저작권은 여백에 있습니다. 폰트 파일의 수정 및 재배포를 금지합니다. / Copyright belongs to 여백 (Yeobaek). Modification and redistribution of this font are prohibited.';
+ const ps=psName(name),yr=new Date().getFullYear();const CP=`Copyright (c) ${yr} 여백 (Yeobaek). All rights reserved.`,LIC='이 폰트의 저작권은 여백에 있습니다. 개인·상업적 용도로 자유롭게 사용할 수 있습니다. 단, 폰트 파일의 수정 및 재배포는 금지합니다. / Copyright belongs to 여백 (Yeobaek). Free for personal and commercial use. Modification and redistribution of the font file are prohibited.';
  const recs=[[0,CP],[1,name],[2,'Regular'],[3,ps+';1.000'],[4,name],[5,'Version 1.000'],[6,ps],[7,'여백 (Yeobaek)'],[8,'여백 (Yeobaek)'],[9,'여백 (Yeobaek)'],[13,LIC]];
  const R2=[];recs.forEach(r=>R2.push([0x0409,...r]));recs.forEach(([id,s])=>{if([0,1,4,7,8,9,13].includes(id))R2.push([0x0412,id,s])});R2.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
  const nm=new W();nm.u16(0);nm.u16(R2.length);nm.u16(6+12*R2.length);const sb=[];let so=0;
@@ -522,6 +522,7 @@ ALLSL.forEach(([k,,,,,fmt])=>{const el=$('s_'+k);el.addEventListener('pointerdow
  el.addEventListener('change',()=>{dragging=false;renderGen();renderKeep()})});
 document.addEventListener('pointerup',()=>{dragging=false});
 document.querySelectorAll('[data-pen]').forEach(b=>b.onclick=()=>{setP('pen',b.dataset.pen);if(b.dataset.pen==='pixel'&&!ST.cur.p.grid){ST.cur.p.grid=16;ST.cur.p.pxT=1}syncEd();drawEd();renderGen();renderKeep()});
+$('edLatReset').onclick=()=>{const f=ST.cur;edUndo.push(JSON.stringify(f.p));edRedo=[];const p={...f.p};['num','numW','lcW'].forEach(k=>delete p[k]);p.lat=.87;p.latW=.77;p.xh=.79;f.p=p;keepSync();save();syncEd();drawEd();renderGen();renderKeep();toast('영문·숫자 비율을 기본값으로 바꿨어요')};
 $('edSeed').onclick=()=>{setP('seed',Math.floor(R()*1e9));renderGen();renderKeep()};
 $('edName').addEventListener('input',()=>{ST.cur.name=$('edName').value||'이름 없는 글씨';keepSync();save()});
 $('edName').addEventListener('change',()=>{renderGen();renderKeep();fillPvFonts()});
