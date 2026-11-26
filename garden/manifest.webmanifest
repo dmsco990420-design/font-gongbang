@@ -1,0 +1,29 @@
+{
+ "name": "글꼴 정원",
+ "short_name": "글꼴 정원",
+ "description": "뼈대에 펜을 입혀 예쁜 한글 폰트를 키우는 정원",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#f7f3ea",
+ "theme_color": "#2f8a57",
+ "lang": "ko",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
