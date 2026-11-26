@@ -300,7 +300,7 @@ function jamoAlone(J,P){const A=P.adv,h=P.w/2,m=A*.18+h,top=P.top-h-80,bot=P.bot
  else S=conStrokes(J,'h',{x0:0,x1:W,y0:H*.1,y1:H*.9},P,'c');
  return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],top-s.dot[1]]}:{pts:s.pts.map(p=>[m+p[0],top-p[1]]),closed:s.closed}),adv:A}}
 
-function latin(ch,P){const L=LAT[ch];if(!L)return null;const isN=ch>='0'&&ch<='9',sc=isN?P.num:P.lat,lo0=ch>='a'&&ch<='z',xw=isN?P.numW:P.latW,sw=L[0]*sc*xw,sb=(P.w/2+28)*(lo0?P.lcW:1);
+function latin(ch,P){const L=LAT[ch];if(!L)return null;const isN=ch>='0'&&ch<='9',sc=isN?P.num:P.lat,lo0=ch>='a'&&ch<='z',xw=isN?P.numW:P.latW,sw=L[0]*sc*xw,sb=(P.w/2+28)*(lo0?P.lcW:isN?1:P.latSp);
  const subs=parse(L[1]);subs.forEach(s=>{if(s.ell)s.ell.lat=1});
  const lo=ch>='a'&&ch<='z',xh=P.xh,fy=y=>!lo||y<=0?y:y<=500?y*xh:500*xh+(y-500)*((740-(1-xh)*238)-500*xh)/240;const map=p=>[sb+p[0]*sc*xw,fy(p[1])*sc];const st=shape(subs,map,P,'L'+ch);return{strokes:st,adv:Math.round(sw+2*sb),fl:L.fl}}
 
@@ -370,7 +370,7 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
 
 // ---- 기본값 ----
 const DEF={hg:0,eg:0,w:70,pen:'round',contrast:0,adv:880,size:.885,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.87,latW:.77,xh:.79,track:0,cell:62.5,pxT:1};
-function norm(p){const P={...DEF,...p};if(p.num===undefined)P.num=Math.round(P.lat*.968*1000)/1000;if(p.lcW===undefined)P.lcW=1;if(p.xh===undefined&&p.lat!==undefined)P.xh=1;if(p.numW===undefined)P.numW=Math.min(1.3,Math.round(P.latW*1.17*1000)/1000);if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
+function norm(p){const P={...DEF,...p};if(p.num===undefined)P.num=Math.round(P.lat*.968*1000)/1000;if(p.lcW===undefined)P.lcW=1;if(p.latSp===undefined)P.latSp=1;if(p.xh===undefined&&p.lat!==undefined)P.xh=1;if(p.numW===undefined)P.numW=Math.min(1.3,Math.round(P.latW*1.17*1000)/1000);if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
 // 미리 계산된 키
 function glyph(ch,p){return build(ch,norm(p))}
 const ALL=()=>{const a=[];for(let c=0xAC00;c<=0xD7A3;c++)a.push(c);for(let c=0x3131;c<=0x3163;c++)a.push(c);Object.keys(LAT).forEach(k=>a.push(k.codePointAt(0)));a.push(32,0x3000);return a};
@@ -439,7 +439,7 @@ const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clear
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
 
 // ---- 범위와 분위기 ----
-const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[760,1100],size:[.74,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.6,1.3],latW:[.7,1.3],num:[.6,1.3],numW:[.7,1.3],xh:[.6,1.1],lcW:[.6,2],hg:[-.5,1],track:[-60,120],grid:[10,24],pxT:[1,2]};
+const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[760,1100],size:[.74,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.6,1.3],latW:[.7,1.3],num:[.6,1.3],numW:[.7,1.3],xh:[.6,1.1],latSp:[.6,2],lcW:[.6,2],hg:[-.5,1],track:[-60,120],grid:[10,24],pxT:[1,2]};
 const INT={grid:1,pxT:1,adv:1,track:1,w:1};
 const MOODS={
  all:{label:'✨ 전체'},
@@ -503,7 +503,7 @@ function renderKeep(){const g=$('keepGrid');if(!ST.keep.length){g.innerHTML='<di
 const SL={edSl1:[['w','굵기',30,125,1,v=>v],['contrast','가로획 가늘게',0,.8,.01,v=>Math.round(v*100)+'%'],['grid','픽셀 칸 수',10,24,1,v=>v+'칸'],['pxT','픽셀 굵기',1,2,1,v=>v+'칸']],
  edSl2:[['corner','모서리 둥글게',0,1,.01,v=>Math.round(v*100)+'%'],['curve','획 휘어짐',0,1,.01,v=>Math.round(v*100)+'%'],['wobble','손떨림',0,1,.01,v=>Math.round(v*100)+'%'],['bounce','통통 튀기',0,1,.01,v=>Math.round(v*100)+'%'],['slant','기울기',-.05,.2,.005,v=>Math.round(v*100)+'%']],
  edSl3:[['adv','글자 폭',760,1100,5,v=>v],['size','글자 크기',.74,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['hg','자음과 모음 사이',-.5,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['eg','ㅔ 두 줄기 간격',-1,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['track','자간',-60,120,2,v=>v]],
- edSl4:[['lat','영문 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['latW','영문 폭',.7,1.3,.01,v=>Math.round(v*100)+'%'],['xh','소문자 높이',.6,1.1,.01,v=>Math.round(v*100)+'%'],['lcW','소문자 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['num','숫자 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['numW','숫자 폭',.7,1.3,.01,v=>Math.round(v*100)+'%']]};
+ edSl4:[['lat','영문 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['latSp','영문 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['xh','소문자 높이',.6,1.1,.01,v=>Math.round(v*100)+'%'],['lcW','소문자 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['num','숫자 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['numW','숫자 폭',.7,1.3,.01,v=>Math.round(v*100)+'%']]};
 Object.entries(SL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl" data-k="${k}"><label for="s_${k}">${lab}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="o_${k}"></output></div>`).join('')});
 const ALLSL=Object.values(SL).flat();let edUndo=[],edRedo=[],slT=0,dragging=false;
 function curP(){return GE.norm(ST.cur.p)}
@@ -522,7 +522,7 @@ ALLSL.forEach(([k,,,,,fmt])=>{const el=$('s_'+k);el.addEventListener('pointerdow
  el.addEventListener('change',()=>{dragging=false;renderGen();renderKeep()})});
 document.addEventListener('pointerup',()=>{dragging=false});
 document.querySelectorAll('[data-pen]').forEach(b=>b.onclick=()=>{setP('pen',b.dataset.pen);if(b.dataset.pen==='pixel'&&!ST.cur.p.grid){ST.cur.p.grid=16;ST.cur.p.pxT=1}syncEd();drawEd();renderGen();renderKeep()});
-$('edLatReset').onclick=()=>{const f=ST.cur;edUndo.push(JSON.stringify(f.p));edRedo=[];const p={...f.p};['num','numW','lcW'].forEach(k=>delete p[k]);p.lat=.87;p.latW=.77;p.xh=.79;f.p=p;keepSync();save();syncEd();drawEd();renderGen();renderKeep();toast('영문·숫자 비율을 기본값으로 바꿨어요')};
+$('edLatReset').onclick=()=>{const f=ST.cur;edUndo.push(JSON.stringify(f.p));edRedo=[];const p={...f.p};['num','numW','lcW','latSp'].forEach(k=>delete p[k]);p.lat=.87;p.latW=.77;p.xh=.79;f.p=p;keepSync();save();syncEd();drawEd();renderGen();renderKeep();toast('영문·숫자 비율을 기본값으로 바꿨어요')};
 $('edSeed').onclick=()=>{setP('seed',Math.floor(R()*1e9));renderGen();renderKeep()};
 $('edName').addEventListener('input',()=>{ST.cur.name=$('edName').value||'이름 없는 글씨';keepSync();save()});
 $('edName').addEventListener('change',()=>{renderGen();renderKeep();fillPvFonts()});
