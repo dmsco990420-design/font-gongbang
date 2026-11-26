@@ -77,7 +77,7 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
 <section class="view show" id="v-gen">
  <div class="chips" id="moods"></div>
  <div class="row"><button class="pri big" id="btnGen" style="flex:1">🎲 새 글씨 12개 뽑기</button><button class="big" id="btnBack" title="이전 뽑기">↶</button></div>
- <div class="row" style="margin-top:10px"><input type="text" id="sampleA" aria-label="제목 문장" value="여백 꾸불 무료 폰트"><input type="text" id="sampleB" aria-label="보기 문장" value="아니요, 아직 못 먹었습니다."></div>
+ <div class="row" style="margin-top:10px"><input type="text" id="sampleA" aria-label="제목" value="여백 폰트"><input type="text" id="sampleB" aria-label="부제" value="TTF 무료 폰트"><textarea id="sampleC" rows="3" aria-label="문장">부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.</textarea></div>
  <p class="mute" id="genInfo" style="margin:8px 2px 0"></p>
  <div class="grid" id="genGrid"></div>
 </section>
@@ -87,6 +87,7 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
  <div id="edBox" class="hide">
   <div class="sticky"><div class="card" style="padding:10px 12px"><div class="row" style="flex-wrap:nowrap"><input type="text" id="edName" aria-label="폰트 이름" style="font-weight:700;padding:7px 10px"><button id="edUndo" title="되돌리기">↶</button><button id="edRedo" title="다시">↷</button></div>
     <div id="edPv" style="margin-top:8px"></div></div></div>
+  <div class="sec"><h2>글씨 써 보기</h2><textarea id="edTry" rows="3" aria-label="써 볼 글씨"></textarea><div id="edTryPv" style="margin-top:10px"></div></div>
   <div class="edwrap"><div>
    <div class="sec"><h2>자주 쓰는 글자 점검</h2><div class="gl" id="edGl"></div><input type="text" id="edGlTxt" style="margin-top:8px" value="가각간갈감갑강같갛 괘괜쾅뷁똠쌍 몇읽앉흙 ㅋㅋㅠㅠ Aag1!?♡"></div>
   </div>
@@ -112,8 +113,8 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
 <section class="view" id="v-pv">
  <div class="sec" style="margin-top:4px">
   <div class="row"><select id="pvFont" style="flex:1"></select></div>
+  <div class="row" style="margin-top:8px"><input type="text" id="pvTitle" value="여백 폰트" aria-label="제목"><input type="text" id="pvSub" value="TTF 무료 폰트" aria-label="부제"></div>
   <textarea id="pvTxt" rows="5" style="margin-top:8px">부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.</textarea>
-  <div class="row" style="margin-top:8px"><input type="text" id="pvTitle" value="여백 꾸불 무료 폰트" aria-label="제목"></div>
   <div class="sl"><label>글자 크기</label><input type="range" id="pvSize" min="16" max="60" value="26"><output id="pvSizeO">26</output></div>
   <div class="seg" id="pvBg"><button data-bg="paper" class="on">종이</button><button data-bg="sky">하늘</button><button data-bg="pink">분홍</button><button data-bg="night">밤</button></div>
  </div>
@@ -431,8 +432,8 @@ return{make}})();
 (()=>{
 const $=id=>document.getElementById(id);
 const SK='font-garden-v1';
-let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 꾸불 무료 폰트',sampleB:'아니요, 아직 못 먹었습니다.',pvBg:'paper',pvSize:26,nameN:0};
-try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]}}catch(e){}
+let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 폰트',sampleB:'TTF 무료 폰트',sampleC:"부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.",pvSub:'TTF 무료 폰트',pvBg:'paper',pvSize:26,nameN:0};
+try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]};if(ST.sampleA==='여백 꾸불 무료 폰트')ST.sampleA='여백 폰트';if(ST.sampleB==='아니요, 아직 못 먹었습니다.')ST.sampleB='TTF 무료 폰트'}catch(e){}
 let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SK,JSON.stringify({...ST,hist:ST.hist.slice(-4)}))}catch(e){}},250)};
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)};
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
@@ -477,7 +478,7 @@ function svgText(f,text,{size=28,maxPx=0,color='currentColor',lh=1.38}={}){const
 function renderMoods(){$('moods').innerHTML=Object.entries(MOODS).map(([k,m])=>`<button data-m="${k}" class="${ST.mood===k?'on':''}">${m.label}</button>`).join('');$('moods').querySelectorAll('button').forEach(b=>b.onclick=()=>{ST.mood=b.dataset.m;renderMoods();save()})}
 const isKept=id=>ST.keep.some(f=>f.id===id);
 function cardHTML(f,where){const kept=isKept(f.id),pick=ST.pick.includes(f.id);return`<div class="card" data-id="${f.id}"><h3>${esc(f.name)} <small>${esc(f.mood||'')}</small></h3>
- <div class="pv" data-act="ed">${svgText(f,ST.sampleA,{size:32,maxPx:560})}<div style="height:4px"></div>${svgText(f,ST.sampleB,{size:19,maxPx:560,color:'#444'})}</div>
+ <div class="pv" data-act="ed">${svgText(f,ST.sampleA,{size:32,maxPx:560})}<div style="height:2px"></div>${svgText(f,ST.sampleB,{size:19,maxPx:560,color:'#444'})}<div style="height:8px"></div>${svgText(f,ST.sampleC,{size:15,maxPx:300,color:'#555',lh:1.5})}</div>
  <div class="acts"><button class="heart ${kept?'on':''}" data-act="keep">${kept?'♥ 보관됨':'♡ 보관'}</button><button data-act="like">🌱 비슷하게</button><button class="pick ${pick?'on':''}" data-act="pick">🧬 섞기</button><button data-act="ed">✏️</button>${where==='keep'?'<button data-act="del">🗑</button>':''}</div></div>`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function findF(id){return ST.gen.find(f=>f.id===id)||ST.keep.find(f=>f.id===id)||(ST.cur&&ST.cur.id===id?ST.cur:null)}
@@ -492,7 +493,7 @@ function renderGen(){const g=$('genGrid');if(!ST.gen.length){g.innerHTML='<div c
 function newGen(list,info){if(ST.gen.length){ST.hist.push({gen:ST.gen,info:ST.genInfo});if(ST.hist.length>8)ST.hist.shift()}ST.gen=list;ST.genInfo=info;save();renderGen();window.scrollTo({top:0,behavior:'smooth'})}
 $('btnGen').onclick=()=>{newGen(Array.from({length:12},()=>rnd(ST.mood)),`${MOODS[ST.mood].label} 새 글씨 12개 · 글씨를 누르면 다듬을 수 있어요`)};
 $('btnBack').onclick=()=>{const h=ST.hist.pop();if(!h)return;ST.gen=h.gen;ST.genInfo=h.info;save();renderGen()};
-let sT=0;['sampleA','sampleB'].forEach(k=>{$(k).value=ST[k];$(k).addEventListener('input',()=>{ST[k]=$(k).value||' ';clearTimeout(sT);sT=setTimeout(()=>{save();renderGen();renderKeep()},250)})});
+let sT=0;['sampleA','sampleB','sampleC'].forEach(k=>{$(k).value=ST[k];$(k).addEventListener('input',()=>{ST[k]=$(k).value||' ';clearTimeout(sT);sT=setTimeout(()=>{save();renderGen();renderKeep()},250)})});
 function renderMix(){const n=ST.pick.length;$('mixBar').classList.toggle('hide',!n);$('mixTxt').textContent=n<2?`섞을 글씨 ${n}개 · 하나 더 골라요`:`섞을 글씨 ${n}개`;$('mixGo').disabled=n<2}
 $('mixGo').onclick=()=>{const fs=ST.pick.map(findF).filter(Boolean);if(fs.length<2)return;const out=[];for(let i=0;i<12;i++){const a=fs[i%fs.length];let b=pk(fs);while(b===a)b=pk(fs);out.push(breed(a,b))}ST.pick=[];newGen(out,`🧬 ${fs.map(f=>f.name).join(' × ')} 섞은 글씨 12개`);go('gen');renderMix()};
 $('mixClr').onclick=()=>{ST.pick=[];save();renderAll()};
@@ -510,7 +511,8 @@ function syncEd(){const f=ST.cur,P=GE.norm(f.p);$('edName').value=f.name;documen
  ALLSL.forEach(([k,,,,,fmt])=>{const v=f.p[k]??P[k]??(k==='grid'?16:0);$('s_'+k).value=v;$('o_'+k).textContent=fmt(+v)});
  const px=f.p.pen==='pixel';['grid','pxT'].forEach(k=>document.querySelector(`.sl[data-k="${k}"]`).classList.toggle('hide',!px));['w','contrast'].forEach(k=>document.querySelector(`.sl[data-k="${k}"]`).classList.toggle('hide',px));
  $('edUndo').disabled=!edUndo.length;$('edRedo').disabled=!edRedo.length;$('edKeep').textContent=isKept(f.id)?'♥ 보관함에 저장됨 (바뀐 것도 저장돼요)':'♡ 보관함에 넣기'}
-function drawEd(){const f=ST.cur;if(!f)return;const W=Math.min(620,$('edPv').clientWidth||340);$('edPv').innerHTML=svgText(f,ST.sampleA,{size:Math.max(28,Math.min(46,W/10)),maxPx:W})+'<div style="height:4px"></div>'+svgText(f,ST.sampleB,{size:18,maxPx:W,color:'#333'});
+function drawTry(){const f=ST.cur;if(!f)return;const W=Math.min(700,$('edTryPv').clientWidth||330);$('edTryPv').innerHTML=svgText(f,ST.sampleC,{size:22,maxPx:W,lh:1.5})}
+function drawEd(){const f=ST.cur;if(!f)return;drawTry();const W=Math.min(620,$('edPv').clientWidth||340);$('edPv').innerHTML=svgText(f,ST.sampleA,{size:Math.max(28,Math.min(46,W/10)),maxPx:W})+'<div style="height:4px"></div>'+svgText(f,ST.sampleB,{size:18,maxPx:W,color:'#333'});
  const pkey=JSON.stringify(f.p);$('edGl').innerHTML=[...$('edGlTxt').value].filter(c=>c.trim()).slice(0,60).map(c=>`<div>${svgText(f,c,{size:36})}</div>`).join('')}
 function setP(k,v,live){const f=ST.cur;if(!dragging){edUndo.push(JSON.stringify(f.p));edRedo=[];if(edUndo.length>80)edUndo.shift()}f.p={...f.p,[k]:v};keepSync();if(live){cancelAnimationFrame(slT);slT=requestAnimationFrame(drawEd)}else drawEd();syncEd();save()}
 function keepSync(){const f=ST.cur,i=ST.keep.findIndex(x=>x.id===f.id);if(i>=0)ST.keep[i]=JSON.parse(JSON.stringify(f));const j=ST.gen.findIndex(x=>x.id===f.id);if(j>=0)ST.gen[j]=JSON.parse(JSON.stringify(f))}
@@ -524,11 +526,12 @@ $('edName').addEventListener('input',()=>{ST.cur.name=$('edName').value||'이름
 $('edName').addEventListener('change',()=>{renderGen();renderKeep();fillPvFonts()});
 $('edUndo').onclick=()=>{if(!edUndo.length)return;edRedo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edUndo.pop());keepSync();save();syncEd();drawEd();renderGen();renderKeep()};
 $('edRedo').onclick=()=>{if(!edRedo.length)return;edUndo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edRedo.pop());keepSync();save();syncEd();drawEd();renderGen();renderKeep()};
+$('edTry').addEventListener('input',()=>{ST.sampleC=$('edTry').value;$('sampleC').value=ST.sampleC;save();clearTimeout(slT);slT=setTimeout(()=>{drawTry();renderGen();renderKeep()},200)});
 $('edGlTxt').addEventListener('input',()=>{clearTimeout(slT);slT=setTimeout(drawEd,200)});
 $('edKeep').onclick=()=>{if(!isKept(ST.cur.id)){ST.keep.unshift(JSON.parse(JSON.stringify(ST.cur)));toast('보관함에 넣었어요')}else toast('보관함에 저장돼 있어요');save();syncEd();renderGen();renderKeep();fillPvFonts()};
 $('edLike').onclick=()=>{const f=ST.cur;newGen(Array.from({length:12},()=>mutate(f,.09)),`‘${f.name}’과 비슷한 글씨 12개`);go('gen')};
 function openEd(f){if(!ST.cur||ST.cur.id!==f.id){edUndo=[];edRedo=[]}ST.cur=JSON.parse(JSON.stringify(f));save();go('ed')}
-function renderEd(){const has=!!ST.cur;$('edEmpty').classList.toggle('hide',has);$('edBox').classList.toggle('hide',!has);if(has){syncEd();drawEd()}}
+function renderEd(){$('edTry').value=ST.sampleC;const has=!!ST.cur;$('edEmpty').classList.toggle('hide',has);$('edBox').classList.toggle('hide',!has);if(has){syncEd();drawEd()}}
 
 // ---- TTF ----
 let DL=null;(async()=>{try{if(window.claude&&claude.use)DL=await claude.use('downloads')}catch(e){DL=null}})();
@@ -551,13 +554,13 @@ const BGS={paper:['#fffdf8','#1d1d1b'],sky:['#e8f2ff','#17325c'],pink:['#ffeef3'
 function pvList(){const L=[...ST.keep];if(ST.cur&&!L.some(f=>f.id===ST.cur.id))L.unshift(ST.cur);ST.gen.forEach(f=>{if(!L.some(x=>x.id===f.id))L.push(f)});return L}
 function fillPvFonts(){const L=pvList(),s=$('pvFont'),v=s.value||ST.pvId;s.innerHTML=L.map(f=>`<option value="${f.id}">${isKept(f.id)?'♥ ':''}${esc(f.name)}</option>`).join('');if(L.some(f=>f.id===v))s.value=v;else if(ST.cur&&L.some(f=>f.id===ST.cur.id))s.value=ST.cur.id}
 function drawPv(){const f=findF($('pvFont').value)||pvList()[0];const st=$('pvStage');if(!f){st.innerHTML='<div class="empty">먼저 글씨를 뽑아 주세요.</div>';return}const [bg,fg]=BGS[ST.pvBg];st.style.background=bg;
- const W=(st.clientWidth||340)-40,sz=+ST.pvSize;st.innerHTML=($('pvTitle').value?svgText(f,$('pvTitle').value,{size:sz*1.6,maxPx:W,color:fg})+'<div style="height:12px"></div>':'')+svgText(f,$('pvTxt').value,{size:sz,maxPx:W,color:fg,lh:1.5})}
-$('pvFont').onchange=()=>{ST.pvId=$('pvFont').value;save();drawPv()};['pvTxt','pvTitle'].forEach(k=>$(k).addEventListener('input',()=>{clearTimeout(slT);slT=setTimeout(drawPv,150)}));
+ const W=(st.clientWidth||340)-40,sz=+ST.pvSize;st.innerHTML=($('pvTitle').value?svgText(f,$('pvTitle').value,{size:sz*1.6,maxPx:W,color:fg})+'<div style="height:6px"></div>':'')+($('pvSub').value?svgText(f,$('pvSub').value,{size:sz*1.05,maxPx:W,color:fg})+'<div style="height:14px"></div>':'')+svgText(f,$('pvTxt').value,{size:sz,maxPx:W,color:fg,lh:1.5})}
+$('pvFont').onchange=()=>{ST.pvId=$('pvFont').value;save();drawPv()};['pvTxt','pvTitle','pvSub'].forEach(k=>{if(ST[k]!==undefined)$(k).value=ST[k];$(k).addEventListener('input',()=>{ST[k]=$(k).value;save();clearTimeout(slT);slT=setTimeout(drawPv,150)})});
 $('pvSize').value=ST.pvSize;$('pvSizeO').textContent=ST.pvSize;$('pvSize').addEventListener('input',()=>{ST.pvSize=+$('pvSize').value;$('pvSizeO').textContent=ST.pvSize;save();cancelAnimationFrame(slT);slT=requestAnimationFrame(drawPv)});
 document.querySelectorAll('[data-bg]').forEach(b=>{b.classList.toggle('on',b.dataset.bg===ST.pvBg);b.onclick=()=>{ST.pvBg=b.dataset.bg;document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('on',x===b));save();drawPv()}});
 $('pvPng').onclick=async()=>{const f=findF($('pvFont').value)||pvList()[0];if(!f)return;const [bg,fg]=BGS[ST.pvBg],S=2,W=1080,pad=80,sz=+ST.pvSize*2.4;const parts=[];
  const add=(text,size,lh,y0)=>{const sc=size/1000,L=layout(f.p,text,(W-2*pad)/sc);L.forEach((ln,i)=>ln.forEach(o=>{if(o.g&&o.g.d)parts.push({d:o.g.d,x:pad+o.x*sc,y:y0+(1000*lh*i+880)*sc,sc})}));return y0+(1000*lh*(L.length-1)+1150)*sc};
- let y=pad;if($('pvTitle').value)y=add($('pvTitle').value,sz*1.6,1.38,y)+sz*.5;y=add($('pvTxt').value,sz,1.5,y)+pad;
+ let y=pad;if($('pvTitle').value)y=add($('pvTitle').value,sz*1.6,1.38,y)+sz*.2;if($('pvSub').value)y=add($('pvSub').value,sz*1.05,1.38,y)+sz*.5;y=add($('pvTxt').value,sz,1.5,y)+pad;
  const cv=document.createElement('canvas');cv.width=W;cv.height=Math.ceil(y);const c=cv.getContext('2d');c.fillStyle=bg;c.fillRect(0,0,cv.width,cv.height);c.fillStyle=fg;
  parts.forEach(p=>{c.save();c.translate(p.x,p.y);c.scale(p.sc,p.sc);c.fill(new Path2D(p.d),'nonzero');c.restore()});
  cv.toBlob(async b=>{const data=new Uint8Array(await b.arrayBuffer());await saveFile((f.name||'미리보기')+'.png',data,t=>$('pvMsg').textContent=t)},'image/png')};
