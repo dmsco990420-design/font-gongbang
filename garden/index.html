@@ -143,13 +143,13 @@ const CON={
  'ㅁ':k=>'M.08 .08 L.92 .08 L.92 .92 L.08 .92 Z',
  'ㅂ':k=>'M.1 .02 L.1 .92 L.9 .92 L.9 .02 M.1 .47 L.9 .47',
  'ㅅ':k=>k==='v'?'M.54 .04 Q.5 .6 .02 .96 M.52 .48 Q.7 .8 .98 .94':'M.5 .04 Q.42 .62 .02 .95 M.5 .4 Q.62 .76 .98 .95',
- 'ㅇ':k=>'O.5 .5 .44 .44',
+ 'ㅇ':(k,P)=>{const r=Math.round(.44*P.oS*1000)/1000;return`O.5 .5 ${r} ${r}`},
  'ㅈ':k=>k==='v'?'M.06 .1 L.9 .1 M.52 .12 Q.48 .62 .02 .96 M.5 .5 Q.7 .8 .98 .94':'M.04 .1 L.96 .1 M.5 .12 Q.42 .64 .02 .95 M.5 .44 Q.62 .78 .98 .95',
  'ㅊ':k=>k==='v'?'M.5 0 L.5 .1 M.06 .24 L.9 .24 M.52 .26 Q.48 .66 .02 .97 M.5 .58 Q.7 .84 .98 .95':'M.5 0 L.5 .1 M.04 .24 L.96 .24 M.5 .26 Q.42 .68 .02 .96 M.5 .54 Q.62 .8 .98 .96',
  'ㅋ':(k,P)=>{const e=v=>Math.round(v*1000)/1000;return k==='v'?'M.04 .1 L.84 .1 Q.95 .1 .93 .26 Q.86 .7 .3 .98 M.06 .5 L'+e(.86-.32*P.kg)+' .5':'M.04 .12 L.94 .12 L.94 .96 M.04 .54 L'+e(.92-.34*P.kg)+' .54'},
  'ㅌ':k=>'M.94 .08 L.08 .08 L.08 .9 L.96 .9 M.08 .49 L.9 .49',
  'ㅍ':k=>'M.04 .08 L.96 .08 M.3 .1 L.3 .9 M.7 .1 L.7 .9 M.02 .9 L.98 .9',
- 'ㅎ':k=>'M.5 0 L.5 .1 M.1 .23 L.9 .23 O.5 .65 .32 .28',
+ 'ㅎ':(k,P)=>{const f=v=>Math.round(v*1000)/1000;return`M.5 0 L.5 .1 M.1 .23 L.9 .23 O.5 ${f(.65+(1-P.oS)*.1)} ${f(.32*P.oS)} ${f(.28*P.oS)}`},
 };
 // ---- 모음 뼈대 ----
 const VOW={
@@ -265,7 +265,7 @@ function conStrokes(J,kind,b,P,key){const d=DBL[J];if(d){const g=Math.max(P.w*.9
 const eS1=P=>.46-(P.eg>0?.14:.06)*P.eg,eS2=P=>Math.min(.95,.86+(P.eg>0?.08:.03)*P.eg),eVW=P=>.42+(P.eg>0?.08:.03)*P.eg;
 const vwOf=(V,P)=>V==='ㅔ'||V==='ㅖ'?eVW(P):VW[V],stemOf=(V,P)=>V==='ㅔ'||V==='ㅖ'?eS1(P):STEM[V];
 function ePath(V,P){const a=eS1(P),b=eS2(P),s=Math.max(.01,a-.36),f=v=>Math.round(v*1000)/1000;return V==='ㅔ'?`M${f(s)} .47 L${f(a)} .47 M${f(a)} .03 L${f(a)} .93 M${f(b)} 0 L${f(b)} 1`:`M${f(s)} .35 L${f(a)} .35 M${f(s)} .62 L${f(a)} .62 M${f(a)} .03 L${f(a)} .93 M${f(b)} 0 L${f(b)} 1`}
-function vowStrokes(V,b,P,key){return shape(parse(V==='ㅔ'||V==='ㅖ'?ePath(V,P):VOW[V]),boxMap(b),P,key+V)}
+function vowStrokes(V,b,P,key){const subs=parse(V==='ㅔ'||V==='ㅖ'?ePath(V,P):VOW[V]);if(P.bl!==1&&VV.includes(V)){const sx=stemOf(V,P);subs.forEach(s=>{if(s.segs&&s.segs.length===1){const g=s.segs[0];if(Math.abs(g.a[1]-g.b[1])<1e-6){const f=x=>Math.abs(x-sx)<.02?x:sx+(x-sx)*P.bl;g.a=[f(g.a[0]),g.a[1]];g.b=[f(g.b[0]),g.b[1]];s.start=g.a}}})}return shape(subs,boxMap(b),P,key+V)}
 
 function jb(T,b,P){if(T!=='ㄹ'||(P.rW===1&&P.rH===1))return b;const cx=(b.x0+b.x1)/2,hw=(b.x1-b.x0)/2*P.rW,h=b.y1-b.y0;return{x0:cx-hw,x1:cx+hw,y0:b.y0,y1:b.y0+h*P.rH}}
 function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%28;const C=CHO[ci],V=JUNG[vi],T=JONG[ti];
@@ -293,13 +293,13 @@ function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%
    const hb={y0:cb+g*.9,y1:jt-g*.75};if(hv==='ㅡ'){hb.y0=hb.y1=(cb+jt)/2}S.push(...vowStrokes(hv,{x0:0,x1:hx1,...hb},P,'h'));
    S.push(...vowStrokes(vv,{x0:vx0,x1:W,y0:0,y1:jt-g*.35},P,'v'));S.push(...conStrokes(T,'j',jb(T,{x0:W*.1,x1:W*.9,y0:jt+g*.2,y1:H},P),P,'t'))}}
  // 몸통 좌표 → 글자 좌표(y 위)
- return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],top-s.dot[1]]}:{pts:s.pts.map(p=>[m+p[0],top-p[1]]),closed:s.closed}),adv:A}}
+ const rs=P.rise,Yf=p=>top-(p[1]-rs*(p[0]-W/2));return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],Yf(s.dot)]}:{pts:s.pts.map(p=>[m+p[0],Yf(p)]),closed:s.closed}),adv:A}}
 
 function jamoAlone(J,P){const A=P.adv,h=P.w/2,m=A*.18+h,top=P.top-h-80,bot=P.bot+h+120,W=A-2*m,H=top-bot;let S;
  if(VOW[J]){const vert=VV.includes(J);S=vowStrokes(J,vert?{x0:W*.2,x1:W*.8,y0:0,y1:H}:{x0:0,x1:W,y0:J==='ㅡ'?H*.5:H*.25,y1:J==='ㅡ'?H*.5:H*.75},P,'v')}
  else if(MV[J]){const [a,b]=MV[J];S=[...vowStrokes(a,{x0:0,x1:W*.6,y0:H*.35,y1:H*.75},P,'h'),...vowStrokes(b,{x0:W*.62,x1:W,y0:0,y1:H},P,'v')]}
  else S=conStrokes(J,'h',{x0:0,x1:W,y0:H*.1,y1:H*.9},P,'c');
- return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],top-s.dot[1]]}:{pts:s.pts.map(p=>[m+p[0],top-p[1]]),closed:s.closed}),adv:A}}
+ const rs=P.rise,Yf=p=>top-(p[1]-rs*(p[0]-W/2));return{strokes:S.map(s=>s.dot?{dot:[m+s.dot[0],Yf(s.dot)]}:{pts:s.pts.map(p=>[m+p[0],Yf(p)]),closed:s.closed}),adv:A}}
 
 function latin(ch,P){const L=LAT[ch];if(!L)return null;const isN=ch>='0'&&ch<='9',sc=isN?P.num:P.lat,lo0=ch>='a'&&ch<='z',xw=isN?P.numW:lo0?P.lcS:P.latW,sw=L[0]*sc*xw,sb=(P.w/2+28)*(lo0?P.lcW:isN?P.numSp:P.latSp);
  const subs=parse(L[1]);subs.forEach(s=>{if(s.ell)s.ell.lat=1});
@@ -363,6 +363,7 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
  let cs=[];
  if(P.pen==='pixel')cs=pixel(G,P);
  else for(const s of G.strokes){if(s.dot)cs.push(...dot(s.dot,P));else if(G.fl&&s.closed){const c=s.pts.slice();if(area(c)>0)c.reverse();cs.push(c)}else if(s.closed)cs.push(...stroke(s.pts,P,true));else splitSharp(s.pts).forEach(q=>cs.push(...stroke(q,P,false)))}
+ if(P.prop>0&&cs.length&&cp>=0xAC00&&cp<=0xD7A3){let x0=1e9,x1=-1e9;cs.forEach(c=>c.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0])}));const sb=40+P.w*.2,na=(x1-x0)+2*sb,k=P.prop,dx=(sb-x0)*k;G={...G,adv:Math.round(G.adv*(1-k)+na*k)};cs=cs.map(c=>c.map(p=>[p[0]+dx,p[1]]))}
  // 기울기·통통 튀기
  const r=rng(hs('b'+cp+'|'+P.seed));const by=P.bounce?(r()-.5)*2*P.bounce*45:0,rot=P.bounce?(r()-.5)*P.bounce*.06:0,sl=P.slant,cx=G.adv/2,cy=380;
  cs=cs.map(c=>{const q=c.map(p=>{let x=p[0]-cx,y=p[1]-cy;const x2=x*Math.cos(rot)-y*Math.sin(rot),y2=x*Math.sin(rot)+y*Math.cos(rot);x=x2+cx+(y2+cy)*sl;y=y2+cy+by;return[Math.round(x),Math.round(y)]});
@@ -370,7 +371,7 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
  return{cs,adv:G.adv+P.track}}
 
 // ---- 기본값 ----
-const DEF={kg:0,rW:1,rH:1,hg:0,eg:0,w:70,pen:'round',contrast:0,adv:880,size:.885,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.87,latW:.77,xh:.79,track:0,cell:62.5,pxT:1};
+const DEF={rise:0,bl:1,oS:1,prop:0,kg:0,rW:1,rH:1,hg:0,eg:0,w:70,pen:'round',contrast:0,adv:880,size:.885,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.87,latW:.77,xh:.79,track:0,cell:62.5,pxT:1};
 function norm(p){const P={...DEF,...p};if(p.num===undefined)P.num=Math.round(P.lat*.968*1000)/1000;if(p.lcW===undefined)P.lcW=1;if(p.latSp===undefined)P.latSp=1;if(p.numSp===undefined)P.numSp=1;if(p.lcS===undefined)P.lcS=P.latW;if(p.xh===undefined&&p.lat!==undefined)P.xh=1;if(p.numW===undefined)P.numW=Math.min(1.3,Math.round(P.latW*1.17*1000)/1000);if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
 // 미리 계산된 키
 function glyph(ch,p){return build(ch,norm(p))}
@@ -435,13 +436,14 @@ const $=id=>document.getElementById(id);
 const SK='font-garden-v1';
 let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 폰트',sampleB:'TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.',sampleC:"부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.",pvSub:'TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.',pvBg:'paper',pvSize:26,nameN:0};
 try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]};if(ST.sampleA==='여백 꾸불 무료 폰트')ST.sampleA='여백 폰트';if(ST.sampleB==='아니요, 아직 못 먹었습니다.')ST.sampleB='TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.';['sampleC','pvTxt'].forEach(k=>{if(typeof ST[k]==='string'&&ST[k].startsWith('안녕하세요. 여백 폰트에 오신 걸 환영합니다.\n'))ST[k]=ST[k].slice(26)});['sampleB','pvSub'].forEach(k=>{if(ST[k]==='TTF 무료 폰트')ST[k]='TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.'})}catch(e){}
+if(!ST.marker){ST.marker=1;ST.keep.unshift({id:'marker-base',name:'마커 손글씨체',mood:'🖍 마커 손글씨',p:{pen:'round',w:96,slant:-.02,adv:800,track:-20,size:.924,gap:.89,frame:.34,jr:.59,corner:.33,curve:.1,wobble:.08,bounce:.15,oRound:.55,oS:.93,prop:1,contrast:0,seed:1,lat:.96,latW:.8,xh:1}})}
 if(!ST.tokki){ST.tokki=1;ST.keep.unshift({id:'tokki-base',name:'또렷 토끼체',mood:'🐰 또렷 손글씨',p:{pen:'round',w:80.6,slant:.078,adv:815,track:-35,size:.932,gap:.91,frame:.015,jr:.59,corner:.39,curve:.04,wobble:0,bounce:0,oRound:.42,contrast:0,seed:1,lat:.95,latW:1,xh:1}})}
 let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SK,JSON.stringify({...ST,hist:ST.hist.slice(-4)}))}catch(e){}},250)};
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)};
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
 
 // ---- 범위와 분위기 ----
-const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[760,1100],size:[.74,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.6,1.3],latW:[.6,1.4],num:[.6,1.3],numW:[.6,1.5],xh:[.6,1.1],rW:[.7,1.25],kg:[0,1],rH:[.7,1.4],latSp:[.6,2],numSp:[.6,2],lcS:[.6,1.4],lcW:[.6,2],hg:[-.5,1],track:[-60,120],grid:[10,24],pxT:[1,2]};
+const B={w:[30,125],contrast:[0,.8],corner:[0,1],curve:[0,1],wobble:[0,1],bounce:[0,1],slant:[-.05,.2],adv:[760,1100],size:[.74,1],gap:[.8,1.4],frame:[0,1],jr:[.5,.7],oRound:[0,1],lat:[.6,1.3],latW:[.6,1.4],num:[.6,1.3],numW:[.6,1.5],xh:[.6,1.1],rW:[.7,1.25],oS:[.6,1.1],bl:[.5,1.2],rise:[-.03,.15],prop:[0,1],kg:[0,1],rH:[.7,1.4],latSp:[.6,2],numSp:[.6,2],lcS:[.6,1.4],lcW:[.6,2],hg:[-.5,1],track:[-60,120],grid:[10,24],pxT:[1,2]};
 const INT={grid:1,pxT:1,adv:1,track:1,w:1};
 const MOODS={
  all:{label:'✨ 전체'},
@@ -451,6 +453,7 @@ const MOODS={
  bold:{label:'🔤 굵은 제목',pens:['round','square'],w:[100,120],corner:[.1,.6],curve:[0,.3],wobble:[0,.2],frame:[0,.6],oRound:[.6,1],gap:[1.1,1.3],size:[0.86,0.94],bounce:[0,.2],contrast:[0,.2],adv:[880,980],slant:[0,.04],jr:[.56,.62]},
  brush:{label:'🖌 붓펜',pens:['brush'],w:[65,108],corner:[0,.5],curve:[.25,.7],wobble:[.15,.5],frame:[.3,1],oRound:[.5,.9],gap:[1,1.2],size:[0.82,0.91],bounce:[.1,.5],contrast:[.15,.5],adv:[820,940],slant:[.02,.12],jr:[.55,.64]},
  tokki:{label:'🐰 또렷 손글씨',pens:['round','round','brush'],w:[70,90],slant:[.06,.1],adv:[790,840],track:[-45,-25],size:[.91,.95],gap:[.88,.95],frame:[0,.15],jr:[.57,.61],corner:[.3,.5],curve:[0,.12],wobble:[0,.1],bounce:[0,.1],oRound:[.35,.5],contrast:[0,0],lat:[.93,.97],latW:[.95,1.05],xh:[1,1]},
+ marker:{label:'🖍 마커 손글씨',pens:['round','round','brush'],w:[88,106],slant:[-.04,.01],adv:[780,830],track:[-30,-10],size:[.9,.95],gap:[.86,.94],frame:[.25,.45],jr:[.57,.61],corner:[.25,.45],curve:[.05,.2],wobble:[.05,.15],bounce:[.1,.25],oRound:[.45,.65],oS:[.85,.98],prop:[.8,1],contrast:[0,0],lat:[.93,.98],latW:[.76,.86],xh:[1,1]},
  pixel:{label:'👾 픽셀',pens:['pixel'],grid:[11,20],pxT:[1,2],w:[60,60],corner:[0,0],curve:[0,.3],wobble:[0,0],frame:[0,1],oRound:[.6,1],gap:[1,1.2],size:[0.84,0.94],bounce:[0,.3],contrast:[0,0],adv:[820,920],slant:[0,0],jr:[.56,.64]},
 };
 const MK=Object.keys(MOODS).filter(k=>k!=='all');
@@ -505,7 +508,7 @@ function renderKeep(){const g=$('keepGrid');if(!ST.keep.length){g.innerHTML='<di
 // ---- 다듬기 ----
 const SL={edSl1:[['w','굵기',30,125,1,v=>v],['contrast','가로획 가늘게',0,.8,.01,v=>Math.round(v*100)+'%'],['grid','픽셀 칸 수',10,24,1,v=>v+'칸'],['pxT','픽셀 굵기',1,2,1,v=>v+'칸']],
  edSl2:[['corner','모서리 둥글게',0,1,.01,v=>Math.round(v*100)+'%'],['curve','획 휘어짐',0,1,.01,v=>Math.round(v*100)+'%'],['wobble','손떨림',0,1,.01,v=>Math.round(v*100)+'%'],['bounce','통통 튀기',0,1,.01,v=>Math.round(v*100)+'%'],['slant','기울기',-.05,.2,.005,v=>Math.round(v*100)+'%']],
- edSl3:[['adv','글자 폭',760,1100,5,v=>v],['size','글자 크기',.74,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['kg','ㅋ 가운데 획 띄우기',0,1,.02,v=>Math.round(v*100)+'%'],['rW','받침 ㄹ 가로',.7,1.25,.01,v=>Math.round(v*100)+'%'],['rH','받침 ㄹ 세로',.7,1.4,.01,v=>Math.round(v*100)+'%'],['hg','자음과 모음 사이',-.5,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['eg','ㅔ 두 줄기 간격',-1,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['track','자간',-60,120,2,v=>v]],
+ edSl3:[['adv','글자 폭',760,1100,5,v=>v],['size','글자 크기',.74,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['oS','ㅇ 크기',.6,1.1,.01,v=>Math.round(v*100)+'%'],['bl','모음 곁줄기 길이',.5,1.2,.01,v=>Math.round(v*100)+'%'],['rise','가로획 오르기',-.03,.15,.005,v=>Math.round(v*100)+'%'],['prop','글자마다 폭 다르게',0,1,.01,v=>Math.round(v*100)+'%'],['kg','ㅋ 가운데 획 띄우기',0,1,.02,v=>Math.round(v*100)+'%'],['rW','받침 ㄹ 가로',.7,1.25,.01,v=>Math.round(v*100)+'%'],['rH','받침 ㄹ 세로',.7,1.4,.01,v=>Math.round(v*100)+'%'],['hg','자음과 모음 사이',-.5,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['eg','ㅔ 두 줄기 간격',-1,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['track','자간',-60,120,2,v=>v]],
  edSl4:[['lat','영문 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['latSp','영문 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['latW','영문 옆으로 늘리기',.6,1.4,.01,v=>Math.round(v*100)+'%'],['xh','소문자 높이',.6,1.1,.01,v=>Math.round(v*100)+'%'],['lcW','소문자 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['lcS','소문자 옆으로 늘리기',.6,1.4,.01,v=>Math.round(v*100)+'%'],['num','숫자 크기',.6,1.3,.01,v=>Math.round(v*100)+'%'],['numSp','숫자 폭',.6,2,.02,v=>Math.round(v*100)+'%'],['numW','숫자 옆으로 늘리기',.6,1.5,.01,v=>Math.round(v*100)+'%']]};
 Object.entries(SL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl" data-k="${k}"><label for="s_${k}">${lab}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="o_${k}"></output></div>`).join('')});
 const ALLSL=Object.values(SL).flat();let edUndo=[],edRedo=[],slT=0,dragging=false;
