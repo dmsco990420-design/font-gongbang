@@ -109,6 +109,25 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
  <p class="mute" style="margin:0 2px 6px">보관한 글씨는 이 기기에 저장돼요. 두 개 이상 🧬 골라서 섞으면 새 글씨가 나와요.</p>
  <div class="grid" id="keepGrid"></div>
 </section>
+<!-- 내 폰트 고치기 -->
+<section class="view" id="v-up">
+ <div class="sec" style="margin-top:4px"><h2>📂 내 폰트 올려서 고치기</h2>
+  <p class="mute" style="margin:0 0 8px">TTF 파일을 올리면 한글·영문·숫자 크기와 간격, 기울기를 고쳐서 새 TTF로 저장할 수 있어요. 파일은 이 기기 안에서만 열려요.</p>
+  <label class="pri" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--acc);color:#fff;border-radius:14px;min-height:50px;font-weight:700;cursor:pointer">📂 TTF 파일 고르기<input type="file" id="upFile" accept=".ttf,font/ttf,application/x-font-ttf,application/octet-stream" style="display:none"></label>
+  <p class="mute" id="upInfo" style="margin:8px 2px 0"></p></div>
+ <div id="upBox" class="hide">
+  <div class="sticky"><div class="card" style="padding:10px 12px"><div class="row" style="flex-wrap:nowrap"><input type="text" id="upName" aria-label="새 폰트 이름" style="font-weight:700;padding:7px 10px"><button id="upUndo" title="되돌리기">↶</button><button id="upRedo" title="다시">↷</button></div>
+   <div id="upPv" style="margin-top:6px"></div>
+   <div style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px"><textarea id="upTry" rows="2" aria-label="글씨 써 보기" placeholder="여기에 글씨를 써 보세요" style="font-size:16px;padding:7px 10px"></textarea><div id="upTryPv" style="margin-top:6px;max-height:22vh;overflow:auto"></div></div></div></div>
+  <div class="sec"><h2>자주 쓰는 글자 점검</h2><div class="gl" id="upGl"></div><input type="text" id="upGlTxt" style="margin-top:8px" value="가각관괄클갈갛괘쾅구고뷁흙으흐ㅠ ABabhgilu123!?"></div>
+  <div class="sec"><h2>한글</h2><div id="upS1"></div></div>
+  <div class="sec"><h2>영문 대문자·기호</h2><div id="upS2"></div></div>
+  <div class="sec"><h2>소문자</h2><div id="upS3"></div></div>
+  <div class="sec"><h2>숫자</h2><div id="upS4"></div></div>
+  <div class="sec"><h2>전체</h2><div id="upS5"></div><button id="upReset" style="margin-top:6px">↺ 처음 폰트대로</button></div>
+  <div class="sec"><h2>저장</h2><button class="pri" id="upTTF" style="width:100%;background:#1d1d1b;border-color:#1d1d1b">⬇︎ 고친 폰트 TTF로 저장</button><div class="bar hide" id="upBar"><i></i></div><p class="mute" id="upMsg"></p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 개인·상업적 사용 가능 · 수정 및 재배포 금지’가 함께 적혀요.</p></div>
+ </div>
+</section>
 <!-- 미리보기 -->
 <section class="view" id="v-pv">
  <div class="sec" style="margin-top:4px">
@@ -124,7 +143,7 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
 </section>
 </main>
 <div class="float hide" id="mixBar"><span id="mixTxt"></span><button id="mixGo">🧬 섞어서 12개</button><button id="mixClr">✕</button></div>
-<nav class="tabbar"><button data-v="gen" class="on"><b>🎲</b>뽑기</button><button data-v="ed"><b>✏️</b>다듬기</button><button data-v="keep"><b>🧺</b>보관함</button><button data-v="pv"><b>👀</b>미리보기</button></nav>
+<nav class="tabbar"><button data-v="gen" class="on"><b>🎲</b>뽑기</button><button data-v="ed"><b>✏️</b>다듬기</button><button data-v="keep"><b>🧺</b>보관함</button><button data-v="up"><b>📂</b>내 폰트</button><button data-v="pv"><b>👀</b>미리보기</button></nav>
 <div class="toast" id="toast"></div>
 <script>
 // ===== 글꼴 정원 엔진: 뼈대(획 중심선) + 펜 → 두께가 고른 글자 =====
@@ -385,7 +404,7 @@ class W{constructor(){this.a=[]}u8(v){this.a.push(v&255)}u16(v){this.a.push(v>>8
 function encGlyph(cs){if(!cs.length)return{bytes:new Uint8Array(0),bb:null,np:0};
  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,np=0;cs.forEach(c=>c.forEach(p=>{x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);np++}));
  const fl=[],xs=[],ys=[];let px=0,py=0;
- cs.forEach(c=>c.forEach(p=>{let f=1;const dx=p[0]-px,dy=p[1]-py;px=p[0];py=p[1];
+ cs.forEach(c=>c.forEach(p=>{let f=p[2]===0?0:1;const dx=p[0]-px,dy=p[1]-py;px=p[0];py=p[1];
   if(dx===0)f|=16;else if(Math.abs(dx)<256){f|=2;if(dx>0)f|=16;xs.push(Math.abs(dx))}else xs.push(dx>>8&255,dx&255);
   if(dy===0)f|=32;else if(Math.abs(dy)<256){f|=4;if(dy>0)f|=32;ys.push(Math.abs(dy))}else ys.push(dy>>8&255,dy&255);fl.push(f)}));
  // 같은 플래그 반복 압축
@@ -431,6 +450,53 @@ function make(name,glyphs,map,opt={}){
 return{make}})();
 
 
+// ===== 올린 TTF 읽기 =====
+const UF=(()=>{
+function parse(buf){const dv=new DataView(buf),u8=new Uint8Array(buf);const tag=dv.getUint32(0);
+ if(tag===0x4F54544F)throw new Error('OTF(CFF) 폰트는 아직 못 읽어요. TTF 파일을 올려 주세요.');
+ if(tag===0x774F4646||tag===0x774F4632)throw new Error('WOFF 파일은 못 읽어요. TTF 파일을 올려 주세요.');
+ const nt=dv.getUint16(4),T={};for(let i=0;i<nt;i++){const o=12+i*16;const t=String.fromCharCode(u8[o],u8[o+1],u8[o+2],u8[o+3]);T[t]={off:dv.getUint32(o+8),len:dv.getUint32(o+12)}}
+ for(const t of ['head','maxp','hhea','hmtx','loca','glyf','cmap'])if(!T[t])throw new Error('필요한 정보('+t+')가 없는 폰트예요.');
+ const upm=dv.getUint16(T.head.off+18),lf=dv.getInt16(T.head.off+50),ng=dv.getUint16(T.maxp.off+4),nh=dv.getUint16(T.hhea.off+34);
+ const adv=[];for(let i=0;i<ng;i++)adv.push(dv.getUint16(T.hmtx.off+4*Math.min(i,nh-1)));
+ const loca=[];for(let i=0;i<=ng;i++)loca.push(lf?dv.getUint32(T.loca.off+4*i):dv.getUint16(T.loca.off+2*i)*2);
+ // cmap
+ const cm=new Map();const co=T.cmap.off,nsub=dv.getUint16(co+2);let best=null,bs=-1;
+ for(let i=0;i<nsub;i++){const pid=dv.getUint16(co+4+i*8),eid=dv.getUint16(co+6+i*8),off=dv.getUint32(co+8+i*8),fmt=dv.getUint16(co+off);const sc=(fmt===12?10:fmt===4?5:0)+(pid===3?1:0);if(sc>bs&&(fmt===4||fmt===12)){bs=sc;best=co+off}}
+ if(best===null)throw new Error('글자표(cmap)를 못 읽었어요.');
+ const fmt=dv.getUint16(best);
+ if(fmt===4){const sc2=dv.getUint16(best+6)/2,eo=best+14,so=eo+sc2*2+2,do_=so+sc2*2,ro=do_+sc2*2;
+  for(let s=0;s<sc2;s++){const e=dv.getUint16(eo+s*2),st=dv.getUint16(so+s*2),d=dv.getInt16(do_+s*2),r=dv.getUint16(ro+s*2);if(st===0xFFFF)break;
+   for(let c=st;c<=e;c++){let g;if(r===0)g=(c+d)&0xFFFF;else{const gi=ro+s*2+r+(c-st)*2;g=dv.getUint16(gi);if(g)g=(g+d)&0xFFFF}if(g)cm.set(c,g)}}}
+ else{const n=dv.getUint32(best+12);for(let i=0;i<n;i++){const o=best+16+i*12,s=dv.getUint32(o),e=dv.getUint32(o+4),g=dv.getUint32(o+8);for(let c=s;c<=e;c++)cm.set(c,g+c-s)}}
+ // glyf
+ const cache=new Map();
+ function glyph(gi,depth=0){if(cache.has(gi))return cache.get(gi);const o=T.glyf.off+loca[gi],len=loca[gi+1]-loca[gi];let cs=[];
+  if(len>0&&depth<8){const nc=dv.getInt16(o);
+   if(nc>=0){const ends=[];for(let i=0;i<nc;i++)ends.push(dv.getUint16(o+10+i*2));const np=nc?ends[nc-1]+1:0;let p=o+10+nc*2;const il=dv.getUint16(p);p+=2+il;
+    const fl=[];while(fl.length<np){const f=u8[p++];fl.push(f);if(f&8){let r=u8[p++];while(r--)fl.push(f)}}
+    const xs=[],ys=[];let v=0;for(let i=0;i<np;i++){const f=fl[i];if(f&2){const d=u8[p++];v+=f&16?d:-d}else if(!(f&16)){v+=dv.getInt16(p);p+=2}xs.push(v)}
+    v=0;for(let i=0;i<np;i++){const f=fl[i];if(f&4){const d=u8[p++];v+=f&32?d:-d}else if(!(f&32)){v+=dv.getInt16(p);p+=2}ys.push(v)}
+    let s=0;for(const e of ends){const c=[];for(let i=s;i<=e;i++)c.push([xs[i],ys[i],fl[i]&1]);if(c.length)cs.push(c);s=e+1}}
+   else{let p=o+10,more=true;while(more){const f=dv.getUint16(p),cg=dv.getUint16(p+2);p+=4;let a1,a2;if(f&1){a1=dv.getInt16(p);a2=dv.getInt16(p+2);p+=4}else{a1=dv.getInt8(p);a2=dv.getInt8(p+1);p+=2}
+    let a=1,b=0,c=0,d=1;if(f&8){a=d=dv.getInt16(p)/16384;p+=2}else if(f&0x40){a=dv.getInt16(p)/16384;d=dv.getInt16(p+2)/16384;p+=4}else if(f&0x80){a=dv.getInt16(p)/16384;b=dv.getInt16(p+2)/16384;c=dv.getInt16(p+4)/16384;d=dv.getInt16(p+6)/16384;p+=8}
+    const dx=f&2?a1:0,dy=f&2?a2:0;glyph(cg,depth+1).forEach(q=>cs.push(q.map(([x,y,on])=>[x*a+y*c+dx,x*b+y*d+dy,on])));more=!!(f&0x20)}}}
+  cache.set(gi,cs);return cs}
+ // 이름
+ let name='';if(T.name){const no=T.name.off,cnt=dv.getUint16(no+2),so=no+dv.getUint16(no+4);for(let i=0;i<cnt;i++){const r=no+6+i*12,pid=dv.getUint16(r),lid=dv.getUint16(r+4),nid=dv.getUint16(r+6),l=dv.getUint16(r+8),off=dv.getUint16(r+10);if(nid!==1||pid!==3)continue;let s='';for(let k=0;k<l;k+=2)s+=String.fromCharCode(dv.getUint16(so+off+k));if(!name||lid===0x412)name=s}}
+ const sc=1000/upm;const out=new Map();
+ cm.forEach((gi,cp)=>{if(gi>=ng)return;out.set(cp,{cs:glyph(gi).map(c=>c.map(([x,y,on])=>[x*sc,y*sc,on])),adv:adv[gi]*sc})});
+ return{name,upm,map:out,count:out.size}}
+// TrueType 외곽선 → SVG 경로 (y 뒤집기)
+function svgPath(cs){let d='';for(const c of cs){const n=c.length;if(n<2)continue;let s=c.findIndex(p=>p[2]);let start;if(s<0){start=[(c[0][0]+c[1][0])/2,(c[0][1]+c[1][1])/2];s=0}else start=c[s];
+ d+='M'+r(start[0])+' '+r(-start[1]);let prevOff=null;for(let k=1;k<=n;k++){const p=c[(s+k)%n];if(s<0&&k===n)break;
+  if(p[2]){if(prevOff){d+='Q'+r(prevOff[0])+' '+r(-prevOff[1])+' '+r(p[0])+' '+r(-p[1]);prevOff=null}else d+='L'+r(p[0])+' '+r(-p[1])}
+  else{if(prevOff){const m=[(prevOff[0]+p[0])/2,(prevOff[1]+p[1])/2];d+='Q'+r(prevOff[0])+' '+r(-prevOff[1])+' '+r(m[0])+' '+r(-m[1])}prevOff=p}}
+ if(prevOff)d+='Q'+r(prevOff[0])+' '+r(-prevOff[1])+' '+r(start[0])+' '+r(-start[1]);d+='Z'}return d}
+const r=v=>Math.round(v*10)/10;
+return{parse,svgPath}})();
+
+
 (()=>{
 const $=id=>document.getElementById(id);
 const SK='font-garden-v1';
@@ -470,7 +536,7 @@ function breed(a,b){const p={pen:R()<.5?a.p.pen:b.p.pen,seed:Math.floor(R()*1e9)
 
 // ---- 글자 그리기 ----
 const GC=new Map();
-function gly(p,pkey,ch){const k=pkey+'\u0001'+ch;let g=GC.get(k);if(g===undefined){if(GC.size>40000)GC.clear();g=GE.glyph(ch,p);if(g)g.d=g.cs.map(c=>'M'+c.map(q=>q[0]+' '+(-q[1])).join('L')+'Z').join('');GC.set(k,g)}return g}
+function gly(p,pkey,ch){const k=pkey+'\u0001'+ch;let g=GC.get(k);if(g===undefined){if(GC.size>40000)GC.clear();if(p.__up){g=upX(ch,p);if(g)g.d=UF.svgPath(g.cs)}else{g=GE.glyph(ch,p);if(g)g.d=g.cs.map(c=>'M'+c.map(q=>q[0]+' '+(-q[1])).join('L')+'Z').join('')}GC.set(k,g)}return g}
 function layout(p,text,maxEm){const pkey=JSON.stringify(p),lines=[];
  for(const para of String(text).split('\n')){let line=[],x=0;const words=para.split(/(\s+)/);
   for(const w of words){if(!w)continue;const gs=[...w].map(ch=>{const g=gly(p,pkey,ch)||gly(p,pkey,'?');return{ch,g}});const ww=gs.reduce((s,o)=>s+(o.g?o.g.adv:500),0);
@@ -576,9 +642,54 @@ $('pvPng').onclick=async()=>{const f=findF($('pvFont').value)||pvList()[0];if(!f
  parts.forEach(p=>{c.save();c.translate(p.x,p.y);c.scale(p.sc,p.sc);c.fill(new Path2D(p.d),'nonzero');c.restore()});
  cv.toBlob(async b=>{const data=new Uint8Array(await b.arrayBuffer());await saveFile((f.name||'미리보기')+'.png',data,t=>$('pvMsg').textContent=t)},'image/png')};
 
+// ---- 내 폰트 고치기 ----
+let UPF=null;const UQ0={hS:1,hSp:1,hW:1,lat:1,latSp:1,latW:1,lcS:1,lcSp:1,lcW:1,num:1,numSp:1,numW:1,latY:0,slant:0,track:0};
+ST.upQ={...UQ0,...(ST.upQ||{})};let upUndo=[],upRedo=[];
+function grp(cp){if((cp>=0xAC00&&cp<=0xD7A3)||(cp>=0x3131&&cp<=0x318E)||(cp>=0x1100&&cp<=0x11FF))return'h';if(cp>=97&&cp<=122)return'lc';if(cp>=48&&cp<=57)return'num';if(cp<0x2E80)return'lat';return'h'}
+function upX(ch,Q){if(!UPF)return null;const cp=ch.codePointAt(0);const g0=UPF.map.get(cp);if(!g0)return null;const G=grp(cp);
+ const S=G==='h'?Q.hS:G==='lc'?Q.lcS:G==='num'?Q.num:Q.lat,Sp=G==='h'?Q.hSp:G==='lc'?Q.lcSp:G==='num'?Q.numSp:Q.latSp,Wx=G==='h'?Q.hW:G==='lc'?Q.lcW:G==='num'?Q.numW:Q.latW,oy=G==='h'?380:0,Y=G==='h'?0:Q.latY;
+ if(!g0.cs.length)return{cs:[],adv:Math.max(0,Math.round(g0.adv*Sp+Q.track))};
+ let x0=1e9,x1=-1e9;g0.cs.forEach(c=>c.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0])}));const lsb=x0,rsb=g0.adv-x1,sx=S*Wx,nl=lsb*Sp;
+ const cs=g0.cs.map(c=>c.map(([x,y,on])=>{const ny=oy+(y-oy)*S+Y,nx=nl+(x-x0)*sx+ny*Q.slant;return[Math.round(nx),Math.round(ny),on]}));
+ return{cs,adv:Math.max(1,Math.round(nl+(x1-x0)*sx+rsb*Sp+Q.track))}}
+const upF=()=>({p:{__up:1,...ST.upQ}});
+const USL={upS1:[['hS','크기',.6,1.4,.01],['hSp','폭(간격)',.4,2,.02],['hW','옆으로 늘리기',.6,1.4,.01]],upS2:[['lat','크기',.6,1.4,.01],['latSp','폭(간격)',.4,2,.02],['latW','옆으로 늘리기',.6,1.4,.01]],upS3:[['lcS','크기',.6,1.4,.01],['lcSp','폭(간격)',.4,2,.02],['lcW','옆으로 늘리기',.6,1.4,.01]],upS4:[['num','크기',.6,1.4,.01],['numSp','폭(간격)',.4,2,.02],['numW','옆으로 늘리기',.6,1.4,.01]],upS5:[['latY','영문·숫자 위아래',-150,150,2],['slant','기울기',-.1,.3,.005],['track','자간(전체)',-150,250,2]]};
+const ufmt=(k,v)=>k==='latY'||k==='track'?String(Math.round(v)):Math.round(v*100)+'%';
+Object.entries(USL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl"><label for="u_${k}">${lab}</label><input type="range" id="u_${k}" min="${a}" max="${b}" step="${st}"><output id="uo_${k}"></output></div>`).join('')});
+const UALL=Object.values(USL).flat();let uT=0,uDrag=false;
+function syncUp(){UALL.forEach(([k])=>{$('u_'+k).value=ST.upQ[k];$('uo_'+k).textContent=ufmt(k,ST.upQ[k])});$('upUndo').disabled=!upUndo.length;$('upRedo').disabled=!upRedo.length}
+function drawUp(){if(!UPF)return;const f=upF(),W=Math.min(620,($('upPv').clientWidth||330));
+ $('upPv').innerHTML=svgText(f,ST.sampleA,{size:Math.max(24,Math.min(40,W/11)),maxPx:W})+'<div style="height:2px"></div>'+svgText(f,ST.sampleB,{size:15,maxPx:W,color:'#333'});
+ $('upTryPv').innerHTML=svgText(f,$('upTry').value||ST.sampleC,{size:19,maxPx:Math.min(700,$('upTryPv').clientWidth||330),lh:1.45});
+ $('upGl').innerHTML=[...$('upGlTxt').value].filter(c=>c.trim()).slice(0,60).map(c=>`<div>${svgText(f,c,{size:36})}</div>`).join('')}
+UALL.forEach(([k])=>{const el=$('u_'+k);el.addEventListener('pointerdown',()=>{upUndo.push(JSON.stringify(ST.upQ));upRedo=[];uDrag=true});
+ el.addEventListener('input',()=>{if(!uDrag){upUndo.push(JSON.stringify(ST.upQ));upRedo=[]}ST.upQ={...ST.upQ,[k]:+el.value};$('uo_'+k).textContent=ufmt(k,+el.value);save();cancelAnimationFrame(uT);uT=requestAnimationFrame(drawUp)});
+ el.addEventListener('change',()=>{uDrag=false;syncUp()})});
+$('upUndo').onclick=()=>{if(!upUndo.length)return;upRedo.push(JSON.stringify(ST.upQ));ST.upQ=JSON.parse(upUndo.pop());save();syncUp();drawUp()};
+$('upRedo').onclick=()=>{if(!upRedo.length)return;upUndo.push(JSON.stringify(ST.upQ));ST.upQ=JSON.parse(upRedo.pop());save();syncUp();drawUp()};
+$('upReset').onclick=()=>{upUndo.push(JSON.stringify(ST.upQ));upRedo=[];ST.upQ={...UQ0};save();syncUp();drawUp()};
+$('upTry').addEventListener('input',()=>{ST.upTry=$('upTry').value;save();clearTimeout(uT);uT=setTimeout(drawUp,200)});
+$('upGlTxt').addEventListener('input',()=>{clearTimeout(uT);uT=setTimeout(drawUp,200)});
+$('upName').addEventListener('input',()=>{ST.upName=$('upName').value;save()});
+// IndexedDB에 원본 보관
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('font-garden',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function idbPut(v){try{const d=await idb();d.transaction('f','readwrite').objectStore('f').put(v,'up')}catch(e){}}
+async function idbGet(){try{const d=await idb();return await new Promise(res=>{const q=d.transaction('f').objectStore('f').get('up');q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}catch(e){return null}}
+function loadUp(buf,fresh){try{UPF=UF.parse(buf)}catch(e){$('upInfo').textContent='못 열었어요: '+e.message;return false}
+ GC.clear();if(fresh){ST.upQ={...UQ0};upUndo=[];upRedo=[];ST.upName=(UPF.name||'내 폰트')+' 수정'}
+ $('upInfo').textContent=`‘${UPF.name||'이름 없음'}’ · 글자 ${UPF.count.toLocaleString()}개를 읽었어요.`;$('upName').value=ST.upName||'';$('upTry').value=ST.upTry||ST.sampleC;$('upBox').classList.remove('hide');syncUp();drawUp();save();return true}
+$('upFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('upInfo').textContent='읽는 중…';const buf=await f.arrayBuffer();if(loadUp(buf,true))idbPut(buf);e.target.value=''});
+(async()=>{const b=await idbGet();if(b)loadUp(b,false)})();
+$('upTTF').onclick=async()=>{if(!UPF||busy)return;busy=true;const bar=$('upBar'),msg=t=>$('upMsg').textContent=t;bar.classList.remove('hide');$('upTTF').disabled=true;
+ try{const glyphs=[{cs:[[[50,0],[50,700],[450,700],[450,0]],[[100,50],[400,50],[400,650],[100,650]]],adv:500}],map=[];const cps=[...UPF.map.keys()];const Q=ST.upQ;
+  for(let i=0;i<cps.length;i++){const g=upX(String.fromCodePoint(cps[i]),Q);if(g){map.push([cps[i],glyphs.length]);glyphs.push(g)}if(i%500===0){bar.firstChild.style.width=Math.round(i/cps.length*100)+'%';msg(`글자 고치는 중… ${Math.round(i/cps.length*100)}%`);await new Promise(r=>setTimeout(r,0))}}
+  const name=($('upName').value||'내 폰트 수정').trim();const data=TTF.make(name,glyphs,map.filter(([c])=>c<=0xFFFF));bar.firstChild.style.width='100%';
+  await saveFile(name.replace(/[\\/:*?"<>|]/g,'')+'.ttf',data,msg)}catch(e){msg('저장하다가 문제가 생겼어요: '+e.message)}
+ busy=false;$('upTTF').disabled=false;setTimeout(()=>bar.classList.add('hide'),1500)};
+
 // ---- 화면 전환 ----
 function go(v){document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id==='v-'+v));document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));ST.view=v;save();
- if(v==='ed')renderEd();if(v==='pv'){fillPvFonts();drawPv()}if(v==='keep')renderKeep();window.scrollTo(0,0)}
+ if(v==='ed')renderEd();if(v==='pv'){fillPvFonts();drawPv()}if(v==='keep')renderKeep();if(v==='up')drawUp();window.scrollTo(0,0)}
 document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>go(b.dataset.v));
 function renderAll(){renderGen();renderKeep();renderMix();if(ST.view==='ed')syncEd()}
 renderMoods();
