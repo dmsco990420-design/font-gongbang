@@ -98,7 +98,7 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
    <div class="sec"><h2>저장</h2>
     <div class="row"><button class="pri" id="edKeep" style="flex:1">♡ 보관함에 넣기</button><button id="edLike" style="flex:1">🌱 비슷하게 12개</button></div>
     <div class="row" style="margin-top:8px"><button class="pri" id="edTTF" style="flex:1;background:#1d1d1b;border-color:#1d1d1b">⬇︎ TTF 폰트 파일로 저장</button></div>
-    <div class="bar hide" id="edBar"><i></i></div><p class="mute" id="edMsg">한글 11,172자 + 낱자모 + 영문·숫자·기호가 모두 들어가요.</p></div>
+    <div class="bar hide" id="edBar"><i></i></div><p class="mute" id="edMsg">한글 11,172자 + 낱자모 + 영문·숫자·기호가 모두 들어가요.</p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 수정 및 재배포 금지’가 함께 적혀요.</p></div>
   </div></div>
  </div>
 </section>
@@ -156,11 +156,11 @@ const VOW={
  'ㅓ':'M.7 0 L.7 1 M.12 .47 L.7 .47','ㅕ':'M.7 0 L.7 1 M.12 .35 L.7 .35 M.12 .62 L.7 .62',
  'ㅣ':'M.5 0 L.5 1',
  'ㅐ':'M.22 .03 L.22 .93 M.22 .47 L.56 .47 M.84 0 L.84 1','ㅒ':'M.22 .03 L.22 .93 M.22 .35 L.56 .35 M.22 .62 L.56 .62 M.84 0 L.84 1',
- 'ㅔ':'M.02 .47 L.32 .47 M.32 .03 L.32 .93 M.94 0 L.94 1','ㅖ':'M.01 .35 L.32 .35 M.01 .62 L.32 .62 M.32 .03 L.32 .93 M.94 0 L.94 1',
+ 'ㅔ':'','ㅖ':'',
  'ㅗ':'M.5 0 L.5 1 M0 1 L1 1','ㅛ':'M.32 0 L.32 1 M.68 0 L.68 1 M0 1 L1 1',
  'ㅜ':'M0 0 L1 0 M.5 0 L.5 1','ㅠ':'M0 0 L1 0 M.32 0 L.32 1 M.68 0 L.68 1','ㅡ':'M0 .5 L1 .5'};
-const STEM={'ㅏ':.3,'ㅑ':.3,'ㅓ':.7,'ㅕ':.7,'ㅣ':.5,'ㅐ':.22,'ㅒ':.22,'ㅔ':.32,'ㅖ':.32};
-const VW={'ㅣ':.17,'ㅏ':.3,'ㅑ':.3,'ㅓ':.32,'ㅕ':.32,'ㅐ':.4,'ㅒ':.4,'ㅔ':.5,'ㅖ':.5};
+const STEM={'ㅏ':.3,'ㅑ':.3,'ㅓ':.7,'ㅕ':.7,'ㅣ':.5,'ㅐ':.22,'ㅒ':.22,'ㅔ':.46,'ㅖ':.46};
+const VW={'ㅣ':.17,'ㅏ':.3,'ㅑ':.3,'ㅓ':.32,'ㅕ':.32,'ㅐ':.4,'ㅒ':.4,'ㅔ':.42,'ㅖ':.42};
 
 // ---- 라틴/숫자/기호 뼈대 (절대 단위, y 위로) [뼈대폭, 경로] ----
 const LAT={
@@ -260,7 +260,11 @@ function boxMap(b){return p=>[b.x0+p[0]*(b.x1-b.x0),b.y0+p[1]*(b.y1-b.y0)]}
 function conStrokes(J,kind,b,P,key){const d=DBL[J];if(d){const g=Math.max(P.w*.9,(b.x1-b.x0)*.08),mid=(b.x0+b.x1)/2;const L={...b,x1:mid-g/2},Rb={...b,x0:mid+g/2};
   return[...conStrokes(d[0],kind==='v'?'h':kind,L,P,key+'a'),...conStrokes(d[1],kind,Rb,P,key+'b')]}
  return shape(parse(CON[J](kind)),boxMap(b),P,key+J+kind)}
-function vowStrokes(V,b,P,key){return shape(parse(VOW[V]),boxMap(b),P,key+V)}
+// ㅔ·ㅖ 두 줄기 간격(eg: -1 좁게 ~ 0 기본 ~ 1 넓게)
+const eS1=P=>.46-(P.eg>0?.14:.06)*P.eg,eS2=P=>Math.min(.95,.86+(P.eg>0?.08:.03)*P.eg),eVW=P=>.42+(P.eg>0?.08:.03)*P.eg;
+const vwOf=(V,P)=>V==='ㅔ'||V==='ㅖ'?eVW(P):VW[V],stemOf=(V,P)=>V==='ㅔ'||V==='ㅖ'?eS1(P):STEM[V];
+function ePath(V,P){const a=eS1(P),b=eS2(P),s=Math.max(.01,a-.36),f=v=>Math.round(v*1000)/1000;return V==='ㅔ'?`M${f(s)} .47 L${f(a)} .47 M${f(a)} .03 L${f(a)} .93 M${f(b)} 0 L${f(b)} 1`:`M${f(s)} .35 L${f(a)} .35 M${f(s)} .62 L${f(a)} .62 M${f(a)} .03 L${f(a)} .93 M${f(b)} 0 L${f(b)} 1`}
+function vowStrokes(V,b,P,key){return shape(parse(V==='ㅔ'||V==='ㅖ'?ePath(V,P):VOW[V]),boxMap(b),P,key+V)}
 
 function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%28;const C=CHO[ci],V=JUNG[vi],T=JONG[ti];
  const A=P.adv,h=P.w/2,m=A*(1-P.size)/2+h+A*.045,top=P.top-h-(1-P.size)*400,bot=P.bot+h+(1-P.size)*400;
@@ -268,7 +272,7 @@ function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%
  const typ=VV.includes(V)?'v':HV.includes(V)?'h':'m';
  if(!T)H*=1-.2*P.frame*(typ==='h'?.6:1);
  const jT=H*P.jr;const S=[];const key='';
- if(typ==='v'){const vw=Math.max(W*VW[V],P.w*2.2);const cx1=W-vw-g;
+ if(typ==='v'){const vw=Math.max(W*vwOf(V,P),P.w*2.2);const cx1=W-vw-g;
   if(!T){S.push(...conStrokes(C,'v',{x0:0,x1:cx1,y0:H*.1,y1:H*.9},P,'c'));S.push(...vowStrokes(V,{x0:W-vw,x1:W,y0:0,y1:H},P,'v'))}
   else{S.push(...conStrokes(C,'v',{x0:0,x1:cx1,y0:H*.03,y1:jT-g*.9},P,'c'));S.push(...vowStrokes(V,{x0:W-vw,x1:W,y0:0,y1:jT-g*.35},P,'v'));
    S.push(...conStrokes(T,'j',{x0:W*.1,x1:W*.9,y0:jT+g*.25,y1:H},P,'t'))}}
@@ -278,7 +282,7 @@ function hangul(code,P){const k=code-0xAC00,ci=(k/588)|0,vi=((k%588)/28)|0,ti=k%
   else{const cb=H*.31,jt=Math.max(jT,cb+g*2.6);S.push(...conStrokes(C,'h',{x0:W*.12,x1:W*.88,y0:0,y1:cb},P,'c'));
    const hb={y0:cb+g*.9,y1:jt-g*.75};if(V==='ㅡ'){hb.y0=hb.y1=(cb+jt)/2}S.push(...vowStrokes(V,{x0:0,x1:W,...hb},P,'v'));
    S.push(...conStrokes(T,'j',{x0:W*.1,x1:W*.9,y0:jt+g*.2,y1:H},P,'t'))}}
- else{const hv=MV[V][0],vv=MV[V][1];const vw=Math.max(W*VW[vv],P.w*2.2),vx0=W-vw,stemX=vx0+STEM[vv]*vw;const lo=hv==='ㅗ',up=hv==='ㅜ';
+ else{const hv=MV[V][0],vv=MV[V][1];const vw=Math.max(W*vwOf(vv,P),P.w*2.2),vx0=W-vw,stemX=vx0+stemOf(vv,P)*vw;const lo=hv==='ㅗ',up=hv==='ㅜ';
   const hx1=Math.max(W*.45,stemX-g*.75);
   if(!T){const cb=H*(lo?.47:up?.44:.52);S.push(...conStrokes(C,'h',{x0:0,x1:vx0-g*.6,y0:0,y1:cb},P,'c'));
    const hb={y0:cb+g,y1:lo?H*.8:H*.96};if(hv==='ㅡ'){hb.y0=hb.y1=Math.min(H*.8,cb+g+H*.12)}S.push(...vowStrokes(hv,{x0:0,x1:hx1,...hb},P,'h'));
@@ -364,7 +368,7 @@ function build(ch,P){const cp=ch.codePointAt(0);let G=null;
  return{cs,adv:G.adv+P.track}}
 
 // ---- 기본값 ----
-const DEF={w:70,pen:'round',contrast:0,adv:960,size:.94,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.95,latW:1,track:0,cell:62.5,pxT:1};
+const DEF={eg:0,w:70,pen:'round',contrast:0,adv:960,size:.94,gap:1,frame:0,jr:.6,corner:0,curve:0,wobble:0,slant:0,bounce:0,oRound:.6,seed:1,top:815,bot:-55,lat:.95,latW:1,track:0,cell:62.5,pxT:1};
 function norm(p){const P={...DEF,...p};if(P.pen==='pixel'){P.cell=1000/(P.grid||16);P.w=Math.max(P.w,P.cell*.9)}return P}
 // 미리 계산된 키
 function glyph(ch,p){return build(ch,norm(p))}
@@ -405,8 +409,9 @@ function make(name,glyphs,map,opt={}){
  const os2=new W();const avg=Math.round(glyphs.reduce((s,g)=>s+g.adv,0)/ng);
  os2.u16(4);os2.i16(avg);os2.u16(opt.weight||400);os2.u16(5);os2.u16(0);[650,600,0,75,650,600,0,350,50,300].forEach(v=>os2.i16(v));os2.i16(0);for(let i=0;i<10;i++)os2.u8(0);
  os2.u32(1|1<<5);os2.u32((1<<24|1<<20|1<<14)>>>0);os2.u32(0);os2.u32(0);os2.str('NONE');os2.u16(0x40);os2.u16(0x20);os2.u16(0xFFFF);os2.i16(ASC);os2.i16(DSC);os2.i16(0);os2.u16(Math.max(ASC,gy1));os2.u16(Math.max(-DSC,-gy0));os2.u32((1<<19|1)>>>0);os2.u32(0);os2.i16(500);os2.i16(700);os2.u16(0);os2.u16(32);os2.u16(0);
- const ps=psName(name);const recs=[[0,opt.copy||'Made with 글꼴 정원'],[1,name],[2,'Regular'],[3,ps+';1.000'],[4,name],[5,'Version 1.000'],[6,ps]];
- const R2=[];recs.forEach(r=>R2.push([0x0409,...r]));recs.forEach(([id,s])=>{if(id===1||id===4)R2.push([0x0412,id,s])});R2.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+ const ps=psName(name),yr=new Date().getFullYear();const CP=`Copyright (c) ${yr} 여백 (Yeobaek). All rights reserved.`,LIC='이 폰트의 저작권은 여백에 있습니다. 폰트 파일의 수정 및 재배포를 금지합니다. / Copyright belongs to 여백 (Yeobaek). Modification and redistribution of this font are prohibited.';
+ const recs=[[0,CP],[1,name],[2,'Regular'],[3,ps+';1.000'],[4,name],[5,'Version 1.000'],[6,ps],[7,'여백 (Yeobaek)'],[8,'여백 (Yeobaek)'],[9,'여백 (Yeobaek)'],[13,LIC]];
+ const R2=[];recs.forEach(r=>R2.push([0x0409,...r]));recs.forEach(([id,s])=>{if([0,1,4,7,8,9,13].includes(id))R2.push([0x0412,id,s])});R2.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
  const nm=new W();nm.u16(0);nm.u16(R2.length);nm.u16(6+12*R2.length);const sb=[];let so=0;
  R2.forEach(([lg,id,s])=>{const u=utf16(s);nm.u16(3);nm.u16(1);nm.u16(lg);nm.u16(id);nm.u16(u.length*2);nm.u16(so);u.forEach(c=>sb.push(c>>8,c&255));so+=u.length*2});const nmb=new Uint8Array(nm.a.length+sb.length);nmb.set(nm.a);nmb.set(sb,nm.a.length);
  const post=new W();post.u32(0x30000);post.u32(0);post.i16(-100);post.i16(50);for(let i=0;i<5;i++)post.u32(0);
@@ -496,7 +501,7 @@ function renderKeep(){const g=$('keepGrid');if(!ST.keep.length){g.innerHTML='<di
 // ---- 다듬기 ----
 const SL={edSl1:[['w','굵기',30,125,1,v=>v],['contrast','가로획 가늘게',0,.8,.01,v=>Math.round(v*100)+'%'],['grid','픽셀 칸 수',10,24,1,v=>v+'칸'],['pxT','픽셀 굵기',1,2,1,v=>v+'칸']],
  edSl2:[['corner','모서리 둥글게',0,1,.01,v=>Math.round(v*100)+'%'],['curve','획 휘어짐',0,1,.01,v=>Math.round(v*100)+'%'],['wobble','손떨림',0,1,.01,v=>Math.round(v*100)+'%'],['bounce','통통 튀기',0,1,.01,v=>Math.round(v*100)+'%'],['slant','기울기',-.05,.2,.005,v=>Math.round(v*100)+'%']],
- edSl3:[['adv','글자 폭',800,1100,5,v=>v],['size','글자 크기',.8,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['track','자간',-60,120,2,v=>v]],
+ edSl3:[['adv','글자 폭',800,1100,5,v=>v],['size','글자 크기',.8,1,.005,v=>Math.round(v*100)+'%'],['gap','자모 사이',.8,1.4,.01,v=>Math.round(v*100)+'%'],['frame','탈네모',0,1,.01,v=>Math.round(v*100)+'%'],['jr','받침 높이',.5,.7,.005,v=>Math.round(v*100)],['oRound','ㅇ 동그랗게',0,1,.01,v=>Math.round(v*100)+'%'],['eg','ㅔ 두 줄기 간격',-1,1,.05,v=>v<0?'좁게 '+Math.round(-v*100):v>0?'넓게 '+Math.round(v*100):'기본'],['track','자간',-60,120,2,v=>v]],
  edSl4:[['lat','영문 크기',.8,1.1,.01,v=>Math.round(v*100)+'%'],['latW','영문 폭',.8,1.2,.01,v=>Math.round(v*100)+'%']]};
 Object.entries(SL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl" data-k="${k}"><label for="s_${k}">${lab}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="o_${k}"></output></div>`).join('')});
 const ALLSL=Object.values(SL).flat();let edUndo=[],edRedo=[],slT=0,dragging=false;
