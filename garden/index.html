@@ -434,6 +434,7 @@ const $=id=>document.getElementById(id);
 const SK='font-garden-v1';
 let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 폰트',sampleB:'TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.',sampleC:"부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.",pvSub:'TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.',pvBg:'paper',pvSize:26,nameN:0};
 try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]};if(ST.sampleA==='여백 꾸불 무료 폰트')ST.sampleA='여백 폰트';if(ST.sampleB==='아니요, 아직 못 먹었습니다.')ST.sampleB='TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.';['sampleC','pvTxt'].forEach(k=>{if(typeof ST[k]==='string'&&ST[k].startsWith('안녕하세요. 여백 폰트에 오신 걸 환영합니다.\n'))ST[k]=ST[k].slice(26)});['sampleB','pvSub'].forEach(k=>{if(ST[k]==='TTF 무료 폰트')ST[k]='TTF 무료 폰트 / 안녕하세요. 여백 폰트에 오신 걸 환영합니다.'})}catch(e){}
+if(!ST.tokki){ST.tokki=1;ST.keep.unshift({id:'tokki-base',name:'또렷 토끼체',mood:'🐰 또렷 손글씨',p:{pen:'round',w:80.6,slant:.078,adv:815,track:-35,size:.932,gap:.91,frame:.015,jr:.59,corner:.39,curve:.04,wobble:0,bounce:0,oRound:.42,contrast:0,seed:1,lat:.95,latW:1,xh:1}})}
 let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SK,JSON.stringify({...ST,hist:ST.hist.slice(-4)}))}catch(e){}},250)};
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)};
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
@@ -448,6 +449,7 @@ const MOODS={
  hand:{label:'✍️ 손글씨',pens:['round','round','brush'],w:[45,85],corner:[.1,.7],curve:[.35,1],wobble:[.3,.85],frame:[.5,1],oRound:[.5,1],gap:[1,1.25],size:[0.8,0.9],bounce:[.2,.7],contrast:[0,.2],adv:[800,940],slant:[0,.08],jr:[.55,.66]},
  bold:{label:'🔤 굵은 제목',pens:['round','square'],w:[100,120],corner:[.1,.6],curve:[0,.3],wobble:[0,.2],frame:[0,.6],oRound:[.6,1],gap:[1.1,1.3],size:[0.86,0.94],bounce:[0,.2],contrast:[0,.2],adv:[880,980],slant:[0,.04],jr:[.56,.62]},
  brush:{label:'🖌 붓펜',pens:['brush'],w:[65,108],corner:[0,.5],curve:[.25,.7],wobble:[.15,.5],frame:[.3,1],oRound:[.5,.9],gap:[1,1.2],size:[0.82,0.91],bounce:[.1,.5],contrast:[.15,.5],adv:[820,940],slant:[.02,.12],jr:[.55,.64]},
+ tokki:{label:'🐰 또렷 손글씨',pens:['round','round','brush'],w:[70,90],slant:[.06,.1],adv:[790,840],track:[-45,-25],size:[.91,.95],gap:[.88,.95],frame:[0,.15],jr:[.57,.61],corner:[.3,.5],curve:[0,.12],wobble:[0,.1],bounce:[0,.1],oRound:[.35,.5],contrast:[0,0],lat:[.93,.97],latW:[.95,1.05],xh:[1,1]},
  pixel:{label:'👾 픽셀',pens:['pixel'],grid:[11,20],pxT:[1,2],w:[60,60],corner:[0,0],curve:[0,.3],wobble:[0,0],frame:[0,1],oRound:[.6,1],gap:[1,1.2],size:[0.84,0.94],bounce:[0,.3],contrast:[0,0],adv:[820,920],slant:[0,0],jr:[.56,.64]},
 };
 const MK=Object.keys(MOODS).filter(k=>k!=='all');
