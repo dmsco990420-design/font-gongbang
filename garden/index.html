@@ -77,7 +77,8 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
 <section class="view show" id="v-gen">
  <div class="chips" id="moods"></div>
  <div class="row"><button class="pri big" id="btnGen" style="flex:1">🎲 새 글씨 12개 뽑기</button><button class="big" id="btnBack" title="이전 뽑기">↶</button></div>
- <div class="row" style="margin-top:10px"><input type="text" id="sampleA" aria-label="제목" value="여백 폰트"><input type="text" id="sampleB" aria-label="부제" value="TTF 무료 폰트"><textarea id="sampleC" rows="3" aria-label="문장">부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.</textarea></div>
+ <div class="row" style="margin-top:10px"><input type="text" id="sampleA" aria-label="제목" value="여백 폰트"><input type="text" id="sampleB" aria-label="부제" value="TTF 무료 폰트"><textarea id="sampleC" rows="3" aria-label="문장">안녕하세요. 여백 폰트에 오신 걸 환영합니다.
+부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.</textarea></div>
  <p class="mute" id="genInfo" style="margin:8px 2px 0"></p>
  <div class="grid" id="genGrid"></div>
 </section>
@@ -114,7 +115,8 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
  <div class="sec" style="margin-top:4px">
   <div class="row"><select id="pvFont" style="flex:1"></select></div>
   <div class="row" style="margin-top:8px"><input type="text" id="pvTitle" value="여백 폰트" aria-label="제목"><input type="text" id="pvSub" value="TTF 무료 폰트" aria-label="부제"></div>
-  <textarea id="pvTxt" rows="5" style="margin-top:8px">부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.</textarea>
+  <textarea id="pvTxt" rows="5" style="margin-top:8px">안녕하세요. 여백 폰트에 오신 걸 환영합니다.
+부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.</textarea>
   <div class="sl"><label>글자 크기</label><input type="range" id="pvSize" min="16" max="60" value="26"><output id="pvSizeO">26</output></div>
   <div class="seg" id="pvBg"><button data-bg="paper" class="on">종이</button><button data-bg="sky">하늘</button><button data-bg="pink">분홍</button><button data-bg="night">밤</button></div>
  </div>
@@ -432,8 +434,8 @@ return{make}})();
 (()=>{
 const $=id=>document.getElementById(id);
 const SK='font-garden-v1';
-let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 폰트',sampleB:'TTF 무료 폰트',sampleC:"부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.",pvSub:'TTF 무료 폰트',pvBg:'paper',pvSize:26,nameN:0};
-try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]};if(ST.sampleA==='여백 꾸불 무료 폰트')ST.sampleA='여백 폰트';if(ST.sampleB==='아니요, 아직 못 먹었습니다.')ST.sampleB='TTF 무료 폰트'}catch(e){}
+let ST={mood:'all',gen:[],hist:[],keep:[],cur:null,pick:[],sampleA:'여백 폰트',sampleB:'TTF 무료 폰트',sampleC:"안녕하세요. 여백 폰트에 오신 걸 환영합니다.\n부정하여 대답하는 말은 감탄사로서 아래와 같이 '아니요'로 적습니다. 긍정하여 대답하는 말 '응'에 대응하여, 부정하여 대답하는 말 '아니'를 쓰는 것처럼 '예/네'에 대응하여 감탄사 '아니'에 두루 높임의 보조사 '요'를 붙인 '아니요'를 쓰는 것입니다.",pvSub:'TTF 무료 폰트',pvBg:'paper',pvSize:26,nameN:0};
+try{const o=JSON.parse(localStorage.getItem(SK)||'null');if(o)ST={...ST,...o,pick:[]};if(ST.sampleA==='여백 꾸불 무료 폰트')ST.sampleA='여백 폰트';if(ST.sampleB==='아니요, 아직 못 먹었습니다.')ST.sampleB='TTF 무료 폰트';['sampleC','pvTxt'].forEach(k=>{if(typeof ST[k]==='string'&&ST[k].startsWith("부정하여 대답하는"))ST[k]='안녕하세요. 여백 폰트에 오신 걸 환영합니다.\n'+ST[k]})}catch(e){}
 let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(SK,JSON.stringify({...ST,hist:ST.hist.slice(-4)}))}catch(e){}},250)};
 const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)};
 const R=Math.random,rr=(a,b)=>a+(b-a)*R(),pk=a=>a[Math.floor(R()*a.length)],uid=()=>Date.now().toString(36)+Math.floor(R()*1e6).toString(36);
