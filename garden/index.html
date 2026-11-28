@@ -99,7 +99,7 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
    <div class="sec"><h2>저장</h2>
     <div class="row"><button class="pri" id="edKeep" style="flex:1">♡ 보관함에 넣기</button><button id="edLike" style="flex:1">🌱 비슷하게 12개</button></div>
     <div class="row" style="margin-top:8px"><button class="pri" id="edTTF" style="flex:1;background:#1d1d1b;border-color:#1d1d1b">⬇︎ TTF 폰트 파일로 저장</button></div>
-    <div class="bar hide" id="edBar"><i></i></div><p class="mute" id="edMsg">한글 11,172자 + 낱자모 + 영문·숫자·기호가 모두 들어가요.</p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 개인·상업적 사용 가능 · 수정 및 재배포 금지’가 함께 적혀요.</p></div>
+    <div class="bar hide" id="edBar"><i></i></div><p class="mute" id="edMsg">한글 11,172자 + 낱자모 + 영문·숫자·기호가 모두 들어가요.</p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 개인·상업적 사용 가능 · 수정 및 재배포 금지’가 함께 적혀요.</p><p class="mute psn" style="margin-top:2px"></p></div>
   </div></div>
  </div>
 </section>
@@ -125,7 +125,7 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px}
   <div class="sec"><h2>소문자</h2><div id="upS3"></div></div>
   <div class="sec"><h2>숫자</h2><div id="upS4"></div></div>
   <div class="sec"><h2>전체</h2><div id="upS5"></div><button id="upReset" style="margin-top:6px">↺ 처음 폰트대로</button></div>
-  <div class="sec"><h2>저장</h2><button class="pri" id="upTTF" style="width:100%;background:#1d1d1b;border-color:#1d1d1b">⬇︎ 고친 폰트 TTF로 저장</button><div class="bar hide" id="upBar"><i></i></div><p class="mute" id="upMsg"></p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 개인·상업적 사용 가능 · 수정 및 재배포 금지’가 함께 적혀요.</p></div>
+  <div class="sec"><h2>저장</h2><button class="pri" id="upTTF" style="width:100%;background:#1d1d1b;border-color:#1d1d1b">⬇︎ 고친 폰트 TTF로 저장</button><div class="bar hide" id="upBar"><i></i></div><p class="mute" id="upMsg"></p><p class="mute" style="margin-top:4px">폰트 안에 ‘저작권: 여백 · 개인·상업적 사용 가능 · 수정 및 재배포 금지’가 함께 적혀요.</p><p class="mute psn" style="margin-top:2px"></p></div>
  </div>
 </section>
 <!-- 미리보기 -->
@@ -415,7 +415,12 @@ function encGlyph(cs){if(!cs.length)return{bytes:new Uint8Array(0),bb:null,np:0}
  return{bytes:out,bb:[x0,y0,x1,y1],np}}
 function ck(u){let s=0;for(let i=0;i<u.length;i+=4)s=(s+((u[i]<<24)|(u[i+1]<<16)|((u[i+2]||0)<<8)|(u[i+3]||0)))>>>0;return s}
 function utf16(s){const a=[];for(const c of s){const cp=c.codePointAt(0);if(cp>0xFFFF){const v=cp-0x10000;a.push(0xD800+(v>>10),0xDC00+(v&1023))}else a.push(cp)}return a}
-function psName(name){let h=0;for(const ch of name)h=(h*31+ch.codePointAt(0))>>>0;const b=name.replace(/[^A-Za-z0-9]/g,'');return((b||'FontGarden')+h.toString(36).slice(0,5)).slice(0,50)+'-Regular'}
+const RC=['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'],RV=['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'],RT=['','k','k','k','n','n','n','t','l','k','m','p','t','t','p','p','m','p','p','t','t','ng','t','t','k','t','p','t'];
+function roma(w){let o='';for(const ch of w){const c=ch.codePointAt(0);if(c>=0xAC00&&c<=0xD7A3){const k=c-0xAC00;o+=RC[(k/588)|0]+RV[((k%588)/28)|0]+RT[k%28]}else if(/[A-Za-z0-9]/.test(ch))o+=ch}return o}
+// 영문 이름: '여백 나란체' → 'Yeobaek Naran'
+function enName(name){let ws=name.trim().split(/\s+/).filter(Boolean);if(ws[0]==='여백')ws=ws.slice(1);ws=ws.map((w,i)=>i===ws.length-1&&w.length>1&&w.endsWith('체')?w.slice(0,-1):w);
+ const parts=ws.map(w=>{const r=roma(w);return r?r[0].toUpperCase()+r.slice(1):''}).filter(Boolean);return['Yeobaek',...parts].join(' ')}
+function psName(name){return enName(name).replace(/[^A-Za-z0-9]/g,'').slice(0,54)+'-Regular'}
 // glyphs: [{cs,adv}] (0번=.notdef), map: [[코드,글리프번호]]
 function make(name,glyphs,map,opt={}){
  const ng=glyphs.length;let gx0=1e9,gy0=1e9,gx1=-1e9,gy1=-1e9,maxP=0,maxC=0,advMax=0,minL=1e9,minR=1e9,xMaxE=0;
@@ -432,8 +437,8 @@ function make(name,glyphs,map,opt={}){
  os2.u16(4);os2.i16(avg);os2.u16(opt.weight||400);os2.u16(5);os2.u16(0);[650,600,0,75,650,600,0,350,50,300].forEach(v=>os2.i16(v));os2.i16(0);for(let i=0;i<10;i++)os2.u8(0);
  os2.u32(1|1<<5);os2.u32((1<<24|1<<20|1<<14)>>>0);os2.u32(0);os2.u32(0);os2.str('NONE');os2.u16(0x40);os2.u16(0x20);os2.u16(0xFFFF);os2.i16(ASC);os2.i16(DSC);os2.i16(0);os2.u16(Math.max(ASC,gy1));os2.u16(Math.max(-DSC,-gy0));os2.u32((1<<19|1)>>>0);os2.u32(0);os2.i16(500);os2.i16(700);os2.u16(0);os2.u16(32);os2.u16(0);
  const ps=psName(name),yr=new Date().getFullYear();const CP=`Copyright (c) ${yr} 여백 (Yeobaek). All rights reserved.`,LIC='이 폰트의 저작권은 여백에 있습니다. 개인·상업적 용도로 자유롭게 사용할 수 있습니다. 단, 폰트 파일의 수정 및 재배포는 금지합니다. / Copyright belongs to 여백 (Yeobaek). Free for personal and commercial use. Modification and redistribution of the font file are prohibited.';
- const recs=[[0,CP],[1,name],[2,'Regular'],[3,ps+';1.000'],[4,name],[5,'Version 1.000'],[6,ps],[7,'여백 (Yeobaek)'],[8,'여백 (Yeobaek)'],[9,'여백 (Yeobaek)'],[13,LIC]];
- const R2=[];recs.forEach(r=>R2.push([0x0409,...r]));recs.forEach(([id,s])=>{if([0,1,4,7,8,9,13].includes(id))R2.push([0x0412,id,s])});R2.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+ const en=enName(name);const recs=[[0,CP],[1,en],[2,'Regular'],[3,ps+';1.000'],[4,en],[5,'Version 1.000'],[6,ps],[7,'여백 (Yeobaek)'],[8,'여백 (Yeobaek)'],[9,'여백 (Yeobaek)'],[13,LIC]];
+ const R2=[];recs.forEach(r=>R2.push([0x0409,...r]));recs.forEach(([id,s])=>{if([0,1,4,7,8,9,13].includes(id))R2.push([0x0412,id,id===1||id===4?name:s])});R2.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
  const nm=new W();nm.u16(0);nm.u16(R2.length);nm.u16(6+12*R2.length);const sb=[];let so=0;
  R2.forEach(([lg,id,s])=>{const u=utf16(s);nm.u16(3);nm.u16(1);nm.u16(lg);nm.u16(id);nm.u16(u.length*2);nm.u16(so);u.forEach(c=>sb.push(c>>8,c&255));so+=u.length*2});const nmb=new Uint8Array(nm.a.length+sb.length);nmb.set(nm.a);nmb.set(sb,nm.a.length);
  const post=new W();post.u32(0x30000);post.u32(0);post.i16(-100);post.i16(50);for(let i=0;i<5;i++)post.u32(0);
@@ -447,7 +452,7 @@ function make(name,glyphs,map,opt={}){
  const out=new Uint8Array(size),dv=new DataView(out.buffer);dv.setUint32(0,0x10000);dv.setUint16(4,nt);const e2=Math.floor(Math.log2(nt));dv.setUint16(6,16*2**e2);dv.setUint16(8,e2);dv.setUint16(10,nt*16-16*2**e2);
  let o=hdr,headOff=0;T.forEach(([tag,b],i)=>{const pad=new Uint8Array((b.length+3)&~3);pad.set(b);for(let k=0;k<4;k++)out[12+i*16+k]=tag.charCodeAt(k);dv.setUint32(12+i*16+4,ck(pad));dv.setUint32(12+i*16+8,o);dv.setUint32(12+i*16+12,b.length);out.set(pad,o);if(tag==='head')headOff=o;o+=pad.length});
  dv.setUint32(headOff+8,(0xB1B0AFBA-ck(out))>>>0);return out}
-return{make}})();
+return{make,psName,enName}})();
 
 
 // ===== 올린 TTF 읽기 =====
@@ -582,7 +587,8 @@ const SL={edSl1:[['w','굵기',30,125,1,v=>v],['contrast','가로획 가늘게',
 Object.entries(SL).forEach(([box,list])=>{$(box).innerHTML=list.map(([k,lab,a,b,st])=>`<div class="sl" data-k="${k}"><label for="s_${k}">${lab}</label><input type="range" id="s_${k}" min="${a}" max="${b}" step="${st}"><output id="o_${k}"></output></div>`).join('')});
 const ALLSL=Object.values(SL).flat();let edUndo=[],edRedo=[],slT=0,dragging=false;
 function curP(){return GE.norm(ST.cur.p)}
-function syncEd(){const f=ST.cur,P=GE.norm(f.p);$('edName').value=f.name;document.querySelectorAll('[data-pen]').forEach(b=>b.classList.toggle('on',b.dataset.pen===(f.p.pen||'round')));
+function psShow(){const n1=(ST.cur&&ST.cur.name)||'',n2=$('upName')?$('upName').value:'';document.querySelectorAll('.psn').forEach((el,i)=>{const n=i===0?n1:n2;el.textContent=n?`영문 이름: ${TTF.enName(n)} (PostScript: ${TTF.psName(n)})`:''})}
+function syncEd(){psShow();const f=ST.cur,P=GE.norm(f.p);$('edName').value=f.name;document.querySelectorAll('[data-pen]').forEach(b=>b.classList.toggle('on',b.dataset.pen===(f.p.pen||'round')));
  ALLSL.forEach(([k,,,,,fmt])=>{const v=f.p[k]??P[k]??(k==='grid'?16:0);$('s_'+k).value=v;$('o_'+k).textContent=fmt(+v)});
  const px=f.p.pen==='pixel';['grid','pxT'].forEach(k=>document.querySelector(`.sl[data-k="${k}"]`).classList.toggle('hide',!px));['w','contrast'].forEach(k=>document.querySelector(`.sl[data-k="${k}"]`).classList.toggle('hide',px));
  $('edUndo').disabled=!edUndo.length;$('edRedo').disabled=!edRedo.length;$('edKeep').textContent=isKept(f.id)?'♥ 보관함에 저장됨 (바뀐 것도 저장돼요)':'♡ 보관함에 넣기'}
@@ -599,7 +605,7 @@ document.addEventListener('pointerup',()=>{dragging=false});
 document.querySelectorAll('[data-pen]').forEach(b=>b.onclick=()=>{setP('pen',b.dataset.pen);if(b.dataset.pen==='pixel'&&!ST.cur.p.grid){ST.cur.p.grid=16;ST.cur.p.pxT=1}syncEd();drawEd();renderGen();renderKeep()});
 $('edLatReset').onclick=()=>{const f=ST.cur;edUndo.push(JSON.stringify(f.p));edRedo=[];const p={...f.p};['num','numW','lcW','latSp','numSp','lcS'].forEach(k=>delete p[k]);p.lat=.87;p.latW=.77;p.xh=.79;f.p=p;keepSync();save();syncEd();drawEd();renderGen();renderKeep();toast('영문·숫자 비율을 기본값으로 바꿨어요')};
 $('edSeed').onclick=()=>{setP('seed',Math.floor(R()*1e9));renderGen();renderKeep()};
-$('edName').addEventListener('input',()=>{ST.cur.name=$('edName').value||'이름 없는 글씨';keepSync();save()});
+$('edName').addEventListener('input',()=>{setTimeout(psShow,0);ST.cur.name=$('edName').value||'이름 없는 글씨';keepSync();save()});
 $('edName').addEventListener('change',()=>{renderGen();renderKeep();fillPvFonts()});
 $('edUndo').onclick=()=>{if(!edUndo.length)return;edRedo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edUndo.pop());keepSync();save();syncEd();drawEd();renderGen();renderKeep()};
 $('edRedo').onclick=()=>{if(!edRedo.length)return;edUndo.push(JSON.stringify(ST.cur.p));ST.cur.p=JSON.parse(edRedo.pop());keepSync();save();syncEd();drawEd();renderGen();renderKeep()};
@@ -670,14 +676,14 @@ $('upRedo').onclick=()=>{if(!upRedo.length)return;upUndo.push(JSON.stringify(ST.
 $('upReset').onclick=()=>{upUndo.push(JSON.stringify(ST.upQ));upRedo=[];ST.upQ={...UQ0};save();syncUp();drawUp()};
 $('upTry').addEventListener('input',()=>{ST.upTry=$('upTry').value;save();clearTimeout(uT);uT=setTimeout(drawUp,200)});
 $('upGlTxt').addEventListener('input',()=>{clearTimeout(uT);uT=setTimeout(drawUp,200)});
-$('upName').addEventListener('input',()=>{ST.upName=$('upName').value;save()});
+$('upName').addEventListener('input',()=>{psShow();ST.upName=$('upName').value;save()});
 // IndexedDB에 원본 보관
 const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('font-garden',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 async function idbPut(v){try{const d=await idb();d.transaction('f','readwrite').objectStore('f').put(v,'up')}catch(e){}}
 async function idbGet(){try{const d=await idb();return await new Promise(res=>{const q=d.transaction('f').objectStore('f').get('up');q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}catch(e){return null}}
 function loadUp(buf,fresh){try{UPF=UF.parse(buf)}catch(e){$('upInfo').textContent='못 열었어요: '+e.message;return false}
  GC.clear();if(fresh){ST.upQ={...UQ0};upUndo=[];upRedo=[];ST.upName=(UPF.name||'내 폰트')+' 수정'}
- $('upInfo').textContent=`‘${UPF.name||'이름 없음'}’ · 글자 ${UPF.count.toLocaleString()}개를 읽었어요.`;$('upName').value=ST.upName||'';$('upTry').value=ST.upTry||ST.sampleC;$('upBox').classList.remove('hide');syncUp();drawUp();save();return true}
+ $('upInfo').textContent=`‘${UPF.name||'이름 없음'}’ · 글자 ${UPF.count.toLocaleString()}개를 읽었어요.`;$('upName').value=ST.upName||'';$('upTry').value=ST.upTry||ST.sampleC;$('upBox').classList.remove('hide');syncUp();psShow();drawUp();save();return true}
 $('upFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;$('upInfo').textContent='읽는 중…';const buf=await f.arrayBuffer();if(loadUp(buf,true))idbPut(buf);e.target.value=''});
 (async()=>{const b=await idbGet();if(b)loadUp(b,false)})();
 $('upTTF').onclick=async()=>{if(!UPF||busy)return;busy=true;const bar=$('upBar'),msg=t=>$('upMsg').textContent=t;bar.classList.remove('hide');$('upTTF').disabled=true;
